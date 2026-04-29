@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef, useEffect, useState } from 'react';
 
 const A_GRAY_900 = '#191F28';
 const A_GRAY_600 = '#4E5968';
@@ -15,6 +15,20 @@ interface AdminTopBarProps {
 }
 
 export default function AdminTopBar({ title, subtitle, action }: AdminTopBarProps) {
+  const [searchValue, setSearchValue] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   return (
     <div
       style={{
@@ -63,26 +77,45 @@ export default function AdminTopBar({ title, subtitle, action }: AdminTopBarProp
           stroke="currentColor"
           strokeWidth="2.4"
           strokeLinecap="round"
+          style={{ flexShrink: 0, color: A_GRAY_500 }}
         >
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <span>직원, 부서, 사번 검색…</span>
-        <span
+        <input
+          ref={searchRef}
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          placeholder="직원, 부서, 사번 검색…"
           style={{
-            marginLeft: 'auto',
-            padding: '2px 6px',
-            background: '#fff',
-            border: `1px solid ${A_GRAY_200}`,
-            borderRadius: 5,
-            fontSize: 11,
-            color: A_GRAY_400,
+            flex: 1,
+            border: 'none',
+            background: 'transparent',
+            outline: 'none',
+            fontSize: 13,
+            color: A_GRAY_900,
+            fontFamily: 'inherit',
           }}
-        >
-          ⌘K
-        </span>
+        />
+        {!searchValue && (
+          <span
+            style={{
+              marginLeft: 'auto',
+              padding: '2px 6px',
+              background: '#fff',
+              border: `1px solid ${A_GRAY_200}`,
+              borderRadius: 5,
+              fontSize: 11,
+              color: A_GRAY_400,
+              flexShrink: 0,
+            }}
+          >
+            ⌘K
+          </span>
+        )}
       </div>
       <button
+        onClick={() => alert('알림 기능은 다음 업데이트에서 추가됩니다')}
         style={{
           width: 40,
           height: 40,

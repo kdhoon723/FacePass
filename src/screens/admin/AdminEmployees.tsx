@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import QRCode from 'qrcode';
 import AdminTopBar from './_components/AdminTopBar';
 import StatTile from './_components/StatTile';
@@ -79,6 +79,22 @@ export default function AdminEmployees() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Dropdown menu state
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    if (openMenuId) {
+      document.addEventListener('mousedown', handler);
+    }
+    return () => document.removeEventListener('mousedown', handler);
+  }, [openMenuId]);
+
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
     setError(false);
@@ -158,6 +174,17 @@ export default function AdminEmployees() {
       .catch(() => setQrDataUrl(null));
   }, [inviteToken, inviteUrl]);
 
+  const handleResendInvite = async (id: string, name: string) => {
+    setOpenMenuId(null);
+    try {
+      const res = await adminApi.resendInvite(id);
+      const url = `${window.location.origin}/enroll/${res.token}`;
+      alert(`초대 재발송 완료\n\n${name}님의 새 초대 링크:\n${url}`);
+    } catch {
+      alert('초대 재발송에 실패했어요. 다시 시도해주세요.');
+    }
+  };
+
   const handleCopyLink = async () => {
     if (!inviteToken) return;
     try {
@@ -181,7 +208,10 @@ export default function AdminEmployees() {
         subtitle="직원을 초대하면, 모바일 링크로 본인이 직접 얼굴을 등록해요"
         action={
           <div style={{ display: 'flex', gap: 8 }}>
-            <button style={{ height: 40, padding: '0 14px', borderRadius: 10, background: '#fff', border: `1px solid ${A_GRAY_200}`, color: A_GRAY_700, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
+            <button
+              onClick={() => alert('준비 중 — 다음 업데이트에서 추가됩니다')}
+              style={{ height: 40, padding: '0 14px', borderRadius: 10, background: '#fff', border: `1px solid ${A_GRAY_200}`, color: A_GRAY_700, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               CSV로 일괄 초대
             </button>
@@ -517,11 +547,42 @@ export default function AdminEmployees() {
                       <div style={{ fontSize: 13, fontWeight: 700, color: r.embedding_count > 0 ? A_GREEN : A_GRAY_300 }}>
                         {r.embedding_count > 0 ? `${r.embedding_count}개` : '—'}
                       </div>
-                      <div
-                        onClick={() => alert(`직원 상세 (V2): ${r.name}`)}
-                        style={{ display: 'flex', justifyContent: 'flex-end', color: A_GRAY_400, cursor: 'pointer' }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                      <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }} ref={openMenuId === r.id ? menuRef : null}>
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === r.id ? null : r.id)}
+                          style={{ width: 32, height: 32, borderRadius: 8, border: 0, background: openMenuId === r.id ? A_GRAY_100 : 'transparent', color: A_GRAY_400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                        </button>
+                        {openMenuId === r.id && (
+                          <div style={{ position: 'absolute', top: 36, right: 0, background: '#fff', border: `1px solid ${A_GRAY_200}`, borderRadius: 12, boxShadow: '0 4px 20px rgba(0,19,43,.12)', zIndex: 100, minWidth: 148, overflow: 'hidden' }}>
+                            <button
+                              onClick={() => handleResendInvite(r.id, r.name)}
+                              style={{ display: 'block', width: '100%', padding: '11px 16px', textAlign: 'left', border: 0, background: 'transparent', fontSize: 13, fontWeight: 600, color: A_GRAY_700, cursor: 'pointer', fontFamily: 'inherit' }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = A_GRAY_50; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                            >
+                              초대 재발송
+                            </button>
+                            <button
+                              onClick={() => { setOpenMenuId(null); alert('직원 수정 (V2): 다음 업데이트에서 추가됩니다'); }}
+                              style={{ display: 'block', width: '100%', padding: '11px 16px', textAlign: 'left', border: 0, background: 'transparent', fontSize: 13, fontWeight: 600, color: A_GRAY_700, cursor: 'pointer', fontFamily: 'inherit' }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = A_GRAY_50; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                            >
+                              수정
+                            </button>
+                            <div style={{ height: 1, background: A_GRAY_100, margin: '2px 0' }} />
+                            <button
+                              onClick={() => { setOpenMenuId(null); alert('직원 삭제 (V2): 다음 업데이트에서 추가됩니다'); }}
+                              style={{ display: 'block', width: '100%', padding: '11px 16px', textAlign: 'left', border: 0, background: 'transparent', fontSize: 13, fontWeight: 600, color: A_RED, cursor: 'pointer', fontFamily: 'inherit' }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,82,.06)'; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
