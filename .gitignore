@@ -46,5 +46,11 @@ public/models/*.tflite
 # omc runtime state
 .omc/
 
+# secrets / credentials — never commit
+*service-account*.json
+*-firebase-adminsdk-*.json
+google-credentials*.json
+.firebase/
+
 # misc
 *.tsbuildinfo
