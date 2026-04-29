@@ -8,9 +8,10 @@ const FP_RED = tokens.danger;
 interface Props {
   type?: 'check_in' | 'check_out';
   onTypeChange?: (t: 'check_in' | 'check_out') => void;
+  onBack?: () => void;
 }
 
-export default function ScreenCamera({ type = 'check_in', onTypeChange }: Props = {}) {
+export default function ScreenCamera({ type = 'check_in', onTypeChange, onBack }: Props = {}) {
   return (
     <div style={{ width: '100%', minHeight: '100dvh', background: 'transparent', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
       {/* Dark gradient overlay on top of the KioskApp fixed <video> */}
@@ -18,7 +19,7 @@ export default function ScreenCamera({ type = 'check_in', onTypeChange }: Props 
 
       {/* Top bar */}
       <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,.14)', backdropFilter: 'blur(20px)', border: 0, color: '#fff', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,.14)', backdropFilter: 'blur(20px)', border: 0, color: '#fff', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <div style={{ padding: '8px 14px', borderRadius: 999, background: 'rgba(255,255,255,.14)', backdropFilter: 'blur(20px)', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>

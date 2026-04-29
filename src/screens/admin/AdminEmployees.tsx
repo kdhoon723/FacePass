@@ -82,6 +82,28 @@ export default function AdminEmployees() {
   // Dropdown menu state
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Per-row "link copied" feedback
+  const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+  };
+
+  const handleCopyEmployeeLink = async (rowId: string, token: string) => {
+    const url = `${window.location.origin}/enroll/${token}`;
+    await copyToClipboard(url);
+    setCopiedRowId(rowId);
+    window.setTimeout(() => setCopiedRowId((id) => (id === rowId ? null : id)), 2000);
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -543,7 +565,42 @@ export default function AdminEmployees() {
                       </div>
                       <div style={{ fontSize: 13, color: A_GRAY_700 }}>{r.department ?? '—'}</div>
                       <div>{badge(status)}</div>
-                      <div style={{ fontSize: 13, color: A_GRAY_500 }}>{enrolledDate}</div>
+                      <div style={{ fontSize: 13, color: A_GRAY_500, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span>{enrolledDate}</span>
+                        {r.active_invite_token && (
+                          <button
+                            onClick={() => handleCopyEmployeeLink(r.id, r.active_invite_token!)}
+                            title={`${window.location.origin}/enroll/${r.active_invite_token}`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              padding: '4px 8px',
+                              borderRadius: 6,
+                              border: `1px solid ${copiedRowId === r.id ? A_GREEN : A_GRAY_200}`,
+                              background: copiedRowId === r.id ? 'rgba(0,123,51,.08)' : '#fff',
+                              color: copiedRowId === r.id ? A_GREEN : A_BLUE,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              transition: 'all .15s',
+                            }}
+                          >
+                            {copiedRowId === r.id ? (
+                              <>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                복사됨
+                              </>
+                            ) : (
+                              <>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                링크 복사
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: r.embedding_count > 0 ? A_GREEN : A_GRAY_300 }}>
                         {r.embedding_count > 0 ? `${r.embedding_count}개` : '—'}
                       </div>
@@ -555,7 +612,23 @@ export default function AdminEmployees() {
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
                         </button>
                         {openMenuId === r.id && (
-                          <div style={{ position: 'absolute', top: 36, right: 0, background: '#fff', border: `1px solid ${A_GRAY_200}`, borderRadius: 12, boxShadow: '0 4px 20px rgba(0,19,43,.12)', zIndex: 100, minWidth: 148, overflow: 'hidden' }}>
+                          <div style={{ position: 'absolute', top: 36, right: 0, background: '#fff', border: `1px solid ${A_GRAY_200}`, borderRadius: 12, boxShadow: '0 4px 20px rgba(0,19,43,.12)', zIndex: 100, minWidth: 168, overflow: 'hidden' }}>
+                            {r.active_invite_token && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    handleCopyEmployeeLink(r.id, r.active_invite_token!);
+                                    setOpenMenuId(null);
+                                  }}
+                                  style={{ display: 'block', width: '100%', padding: '11px 16px', textAlign: 'left', border: 0, background: 'transparent', fontSize: 13, fontWeight: 600, color: A_BLUE, cursor: 'pointer', fontFamily: 'inherit' }}
+                                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = A_BLUE_WEAK; }}
+                                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                                >
+                                  등록 링크 복사
+                                </button>
+                                <div style={{ height: 1, background: A_GRAY_100, margin: '2px 0' }} />
+                              </>
+                            )}
                             <button
                               onClick={() => handleResendInvite(r.id, r.name)}
                               style={{ display: 'block', width: '100%', padding: '11px 16px', textAlign: 'left', border: 0, background: 'transparent', fontSize: 13, fontWeight: 600, color: A_GRAY_700, cursor: 'pointer', fontFamily: 'inherit' }}

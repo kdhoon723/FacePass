@@ -7,7 +7,13 @@ const FX_GRAY_600 = tokens.gray600;
 const FX_GRAY_500 = tokens.gray500;
 const FX_GRAY_100 = tokens.gray100;
 
-export default function ScreenPermPrime() {
+interface Props {
+  onAllow?: () => void;
+  onLater?: () => void;
+  onClose?: () => void;
+}
+
+export default function ScreenPermPrime({ onAllow, onLater, onClose }: Props = {}) {
   return (
     <div
       style={{
@@ -43,6 +49,7 @@ export default function ScreenPermPrime() {
         }}
       >
         <button
+          onClick={onClose}
           style={{
             width: 40,
             height: 40,
@@ -268,6 +275,7 @@ export default function ScreenPermPrime() {
         }}
       >
         <button
+          onClick={onAllow}
           style={{
             width: '100%',
             height: 56,
@@ -284,6 +292,7 @@ export default function ScreenPermPrime() {
           카메라 권한 허용
         </button>
         <button
+          onClick={onLater}
           style={{
             width: '100%',
             height: 48,

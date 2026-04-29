@@ -17,6 +17,7 @@ interface Props {
   status?: 'on_time' | 'late' | 'early_leave';
   /** Consecutive on-time streak in days (hide when undefined) */
   streakDays?: number;
+  onClose?: () => void;
 }
 
 function formatKoreanTime(date: Date): string {
@@ -41,6 +42,7 @@ export default function ScreenSuccess({
   locationLabel = '본사 7층 라운지 · 키오스크',
   status = 'on_time',
   streakDays,
+  onClose,
 }: Props) {
   const name = employee?.name ?? '김지원';
   const initials = name.slice(-2);
@@ -56,7 +58,7 @@ export default function ScreenSuccess({
 
       {/* Top close */}
       <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', justifyContent: 'flex-end' }}>
-        <button style={{ width: 40, height: 40, borderRadius: 99, background: FP_GRAY_100, border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: FP_GRAY_900 }}>
+        <button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 99, background: FP_GRAY_100, border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: FP_GRAY_900 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -116,7 +118,7 @@ export default function ScreenSuccess({
       <div style={{ flex: 1 }} />
 
       <div style={{ padding: '16px 20px 12px' }}>
-        <button style={{
+        <button onClick={onClose} style={{
           width: '100%', height: 56, borderRadius: 16, border: 0,
           background: FP_BLUE, color: '#fff', fontSize: 17, fontWeight: 700,
           fontFamily: 'inherit', cursor: 'pointer',

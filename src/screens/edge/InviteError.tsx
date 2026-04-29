@@ -1,5 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import ScreenInviteError from './ScreenInviteError';
 
 export default function InviteError() {
-  return <ScreenInviteError />;
+  const navigate = useNavigate();
+  return (
+    <ScreenInviteError
+      onClose={() => navigate('/')}
+    />
+  );
 }

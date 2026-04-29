@@ -10,7 +10,12 @@ const FX_GRAY_200 = tokens.gray200;
 const FX_GRAY_100 = tokens.gray100;
 const FX_AMBER = tokens.amber;
 
-export default function ScreenPermDenied() {
+interface Props {
+  onBack?: () => void;
+  onEmpno?: () => void;
+}
+
+export default function ScreenPermDenied({ onBack, onEmpno }: Props = {}) {
   return (
     <div
       style={{
@@ -46,6 +51,7 @@ export default function ScreenPermDenied() {
         }}
       >
         <button
+          onClick={onBack}
           style={{
             width: 40,
             height: 40,
@@ -278,6 +284,7 @@ export default function ScreenPermDenied() {
         }}
       >
         <button
+          onClick={() => alert('브라우저 설정 → 사이트 권한 → 카메라 항목에서 FacePass를 허용해주세요.')}
           style={{
             width: '100%',
             height: 56,
@@ -312,6 +319,7 @@ export default function ScreenPermDenied() {
           </svg>
         </button>
         <button
+          onClick={onEmpno}
           style={{
             width: '100%',
             height: 48,

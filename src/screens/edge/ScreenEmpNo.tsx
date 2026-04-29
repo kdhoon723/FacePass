@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { tokens } from '@/lib/tokens';
 
 const FX_BLUE = tokens.brand;
@@ -6,9 +7,30 @@ const FX_GRAY_500 = tokens.gray500;
 const FX_GRAY_200 = tokens.gray200;
 const FX_GRAY_100 = tokens.gray100;
 
-const digits = ['1', '4', '2', '', '', ''];
+interface Props {
+  onBack?: () => void;
+  onSubmit?: (empNo: string, type: 'check_in' | 'check_out') => void;
+}
 
-export default function ScreenEmpNo() {
+export default function ScreenEmpNo({ onBack, onSubmit }: Props = {}) {
+  const [inputValue, setInputValue] = useState('');
+  const [checkType, setCheckType] = useState<'check_in' | 'check_out'>('check_in');
+
+  const digits = inputValue.padEnd(6, '').split('');
+
+  function handleKey(n: string) {
+    if (n === '⌫') {
+      setInputValue((v) => v.slice(0, -1));
+      return;
+    }
+    if (inputValue.length >= 6) return;
+    const next = inputValue + n;
+    setInputValue(next);
+    if (next.length === 6) {
+      onSubmit?.(next, checkType);
+    }
+  }
+
   return (
     <div
       style={{
@@ -34,6 +56,7 @@ export default function ScreenEmpNo() {
         }}
       >
         <button
+          onClick={onBack}
           style={{
             width: 40,
             height: 40,
@@ -127,7 +150,10 @@ export default function ScreenEmpNo() {
           color: FX_GRAY_500,
         }}
       >
-        EMP-<span style={{ color: FX_GRAY_900, fontWeight: 700 }}>142</span>___
+        EMP-
+        <span style={{ color: FX_GRAY_900, fontWeight: 700 }}>
+          {inputValue || '______'}
+        </span>
       </div>
 
       <div style={{ flex: 1 }} />
@@ -150,24 +176,31 @@ export default function ScreenEmpNo() {
           }}
         >
           <div
+            onClick={() => setCheckType('check_in')}
             style={{
               padding: '8px 16px',
               borderRadius: 999,
-              background: '#fff',
-              color: FX_GRAY_900,
+              background: checkType === 'check_in' ? '#fff' : 'transparent',
+              color: checkType === 'check_in' ? FX_GRAY_900 : FX_GRAY_500,
               fontSize: 13,
               fontWeight: 700,
-              boxShadow: '0 1px 3px rgba(0,19,43,.06)',
+              boxShadow: checkType === 'check_in' ? '0 1px 3px rgba(0,19,43,.06)' : 'none',
+              cursor: 'pointer',
             }}
           >
             출근
           </div>
           <div
+            onClick={() => setCheckType('check_out')}
             style={{
               padding: '8px 16px',
-              color: FX_GRAY_500,
+              borderRadius: 999,
+              background: checkType === 'check_out' ? '#fff' : 'transparent',
+              color: checkType === 'check_out' ? FX_GRAY_900 : FX_GRAY_500,
               fontSize: 13,
               fontWeight: 700,
+              boxShadow: checkType === 'check_out' ? '0 1px 3px rgba(0,19,43,.06)' : 'none',
+              cursor: 'pointer',
             }}
           >
             퇴근
@@ -189,6 +222,7 @@ export default function ScreenEmpNo() {
               <button
                 key={i}
                 disabled={!n}
+                onClick={() => n && handleKey(n)}
                 style={{
                   height: 54,
                   border: 0,

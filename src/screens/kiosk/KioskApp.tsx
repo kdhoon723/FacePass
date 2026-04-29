@@ -11,8 +11,9 @@ import ScreenRecognizing from './ScreenRecognizing';
 import ScreenSuccess from './ScreenSuccess';
 import ScreenFailure from './ScreenFailure';
 import ScreenPermDenied from '@/screens/edge/ScreenPermDenied';
+import ScreenEmpNo from '@/screens/edge/ScreenEmpNo';
 
-type Step = 'idle' | 'camera' | 'recognizing' | 'success' | 'failure' | 'permission-denied';
+type Step = 'idle' | 'camera' | 'recognizing' | 'success' | 'failure' | 'permission-denied' | 'empno';
 
 const FACE_CONFIDENCE_THRESHOLD = 0.7;
 const FACE_HOLD_MS = 1000;
@@ -249,19 +250,37 @@ export default function KioskApp() {
                 }
               : null
           }
+          onEmpnoFallback={() => setStep('empno')}
         />
       )}
-      {step === 'camera' && <ScreenCamera type={checkType} onTypeChange={setCheckType} />}
+      {step === 'camera' && <ScreenCamera type={checkType} onTypeChange={setCheckType} onBack={() => setStep('idle')} />}
       {step === 'recognizing' && <ScreenRecognizing />}
       {step === 'success' && (
         <ScreenSuccess
           employee={employee ?? undefined}
           checkType={checkType}
           recognizedAt={recognizedAt ?? undefined}
+          onClose={() => setStep('idle')}
         />
       )}
-      {step === 'failure' && <ScreenFailure error={error} onRetry={handleRetry} />}
+      {step === 'failure' && (
+        <ScreenFailure
+          error={error}
+          onRetry={handleRetry}
+          onClose={() => setStep('idle')}
+          onEmpnoFallback={() => setStep('empno')}
+        />
+      )}
       {step === 'permission-denied' && <ScreenPermDenied />}
+      {step === 'empno' && (
+        <ScreenEmpNo
+          onBack={() => setStep('idle')}
+          onSubmit={(_empNo, _type) => {
+            alert('사번 매칭 기능은 다음 업데이트에서 추가될 예정이에요. 얼굴 인식을 다시 시도해주세요.');
+            setStep('idle');
+          }}
+        />
+      )}
     </div>
   );
 }

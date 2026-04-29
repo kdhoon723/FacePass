@@ -8,7 +8,11 @@ const FX_GRAY_200 = tokens.gray200;
 const FX_GRAY_100 = tokens.gray100;
 const FX_RED = tokens.danger;
 
-export default function ScreenInviteError() {
+interface Props {
+  onClose?: () => void;
+}
+
+export default function ScreenInviteError({ onClose }: Props = {}) {
   return (
     <div
       style={{
@@ -44,6 +48,7 @@ export default function ScreenInviteError() {
         }}
       >
         <button
+          onClick={onClose}
           style={{
             width: 40,
             height: 40,
@@ -247,6 +252,7 @@ export default function ScreenInviteError() {
         }}
       >
         <button
+          onClick={() => alert('관리자에게 직접 새 등록 링크를 요청해주세요.')}
           style={{
             width: '100%',
             height: 56,
@@ -279,6 +285,7 @@ export default function ScreenInviteError() {
           담당자에게 새 링크 요청
         </button>
         <button
+          onClick={() => alert('도움이 필요하시면 IT 담당자 또는 HR에 문의해주세요.')}
           style={{
             width: '100%',
             height: 48,

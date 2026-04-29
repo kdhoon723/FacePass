@@ -19,7 +19,10 @@ employeesRoutes.get('/', async (c) => {
 
   let query = supabase
     .from('employees')
-    .select('*, employee_embeddings(count)', { count: 'exact' })
+    .select(
+      '*, employee_embeddings(count), enroll_invitations(token, expires_at, used_at, created_at)',
+      { count: 'exact' },
+    )
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -36,13 +39,24 @@ employeesRoutes.get('/', async (c) => {
   const { data, error, count } = await query;
   if (error) throw new AppError(error.message, 500, 'DB_ERROR');
 
-  const mapped = (data ?? []).map((emp) => ({
-    ...emp,
-    embedding_count: Array.isArray(emp.employee_embeddings)
-      ? emp.employee_embeddings.length
-      : (emp.employee_embeddings as { count: number } | null)?.count ?? 0,
-    employee_embeddings: undefined,
-  }));
+  const now = Date.now();
+  const mapped = (data ?? []).map((emp) => {
+    const invites = Array.isArray(emp.enroll_invitations) ? emp.enroll_invitations : [];
+    // Pick the most recent unused, unexpired invitation as the "active" link.
+    const active = invites
+      .filter((i) => !i.used_at && new Date(i.expires_at).getTime() > now)
+      .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))[0];
+    return {
+      ...emp,
+      embedding_count: Array.isArray(emp.employee_embeddings)
+        ? emp.employee_embeddings.length
+        : (emp.employee_embeddings as { count: number } | null)?.count ?? 0,
+      employee_embeddings: undefined,
+      enroll_invitations: undefined,
+      active_invite_token: active?.token ?? null,
+      active_invite_expires_at: active?.expires_at ?? null,
+    };
+  });
 
   return c.json({ data: mapped, total: count ?? 0, limit, offset });
 });

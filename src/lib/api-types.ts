@@ -53,6 +53,8 @@ export interface Employee {
 
 export interface EmployeeWithEmbeddingCount extends Employee {
   embedding_count: number;
+  active_invite_token?: string | null;
+  active_invite_expires_at?: string | null;
 }
 
 export interface EmployeeListPage {

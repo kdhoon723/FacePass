@@ -23,16 +23,18 @@ const tips: Tip[] = [
 interface Props {
   error?: string | null;
   onRetry?: () => void;
+  onEmpnoFallback?: () => void;
+  onClose?: () => void;
 }
 
-export default function ScreenFailure({ error: _error, onRetry }: Props = {}) {
+export default function ScreenFailure({ error: _error, onRetry, onEmpnoFallback, onClose }: Props = {}) {
   return (
     <div style={{ width: '100%', minHeight: '100dvh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
       <div style={{ position: 'absolute', top: -100, left: '50%', transform: 'translateX(-50%)', width: 600, height: 360, background: 'radial-gradient(ellipse at center, rgba(239,68,82,.10) 0%, rgba(239,68,82,0) 70%)' }} />
 
 
       <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', justifyContent: 'flex-end' }}>
-        <button style={{ width: 40, height: 40, borderRadius: 99, background: FP_GRAY_100, border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: FP_GRAY_900 }}>
+        <button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 99, background: FP_GRAY_100, border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: FP_GRAY_900 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -84,7 +86,7 @@ export default function ScreenFailure({ error: _error, onRetry }: Props = {}) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10"/></svg>
           다시 시도하기
         </button>
-        <button style={{
+        <button onClick={onEmpnoFallback} style={{
           width: '100%', height: 52, borderRadius: 14, border: 0,
           background: 'rgba(7,25,76,0.05)', color: FP_GRAY_600, fontSize: 16, fontWeight: 700,
           fontFamily: 'inherit', cursor: 'pointer',

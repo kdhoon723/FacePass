@@ -22,6 +22,7 @@ interface Props {
     totalEmployees: number;
     lastRecognition?: { name: string; at: string };
   } | null;
+  onEmpnoFallback?: () => void;
 }
 
 function formatClock(date: Date): string {
@@ -65,6 +66,7 @@ export default function ScreenIdle({
   locationLabel = '본사 7층',
   cutoffTime = '09:00',
   stats = null,
+  onEmpnoFallback,
 }: Props = {}) {
   const [now, setNow] = useState(() => new Date());
 
@@ -325,6 +327,7 @@ export default function ScreenIdle({
           </div>
         </div>
         <button
+          onClick={onEmpnoFallback}
           style={{
             width: '100%',
             height: 48,
