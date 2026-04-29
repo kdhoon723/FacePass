@@ -2,11 +2,18 @@ import { tokens } from '@/lib/tokens';
 
 const FP_BLUE = tokens.brand;
 
-export default function ScreenRecognizing() {
+interface Props {
+  /** dataURL of the cropped face used for embedding extraction.
+   *  Shown as a small thumbnail so the user sees exactly which image is being analyzed. */
+  capturedFace?: string | null;
+}
+
+export default function ScreenRecognizing({ capturedFace }: Props = {}) {
   return (
-    <div style={{ width: '100%', minHeight: '100dvh', background: '#0E1116', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 38%, #3a4252 0%, #1c2230 45%, #0a0d12 100%)' }} />
-      <div style={{ position: 'absolute', left: '50%', top: 360, transform: 'translate(-50%,-50%)', width: 220, height: 270, borderRadius: '48%', background: 'radial-gradient(ellipse at center, rgba(255,200,170,.18) 0%, rgba(255,200,170,0) 70%)' }} />
+    <div style={{ width: '100%', minHeight: '100dvh', background: 'transparent', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto', zIndex: 2 }}>
+      {/* Semi-transparent dark overlay so the kiosk's live video stays visible
+          underneath while text/UI remains legible. */}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 38%, rgba(58,66,82,.55) 0%, rgba(28,34,48,.72) 45%, rgba(10,13,18,.85) 100%)', pointerEvents: 'none' }} />
 
 
       <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -54,6 +61,30 @@ export default function ScreenRecognizing() {
           </svg>
         </div>
       </div>
+
+      {/* Captured face thumbnail — shows the exact frame being analyzed */}
+      {capturedFace && (
+        <div style={{ position: 'relative', padding: '20px 24px 0', display: 'flex', justifyContent: 'center' }}>
+          <div
+            style={{
+              padding: 6,
+              background: 'rgba(255,255,255,.12)',
+              borderRadius: 14,
+              backdropFilter: 'blur(14px)',
+              border: '1px solid rgba(255,255,255,.18)',
+            }}
+          >
+            <img
+              src={capturedFace}
+              alt="분석 중인 얼굴"
+              style={{ width: 96, height: 96, borderRadius: 10, objectFit: 'cover', display: 'block' }}
+            />
+            <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,.7)', fontWeight: 600, textAlign: 'center' }}>
+              분석 이미지
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ flex: 1 }} />
 

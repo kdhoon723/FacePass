@@ -15,10 +15,12 @@ import ScreenEmpNo from '@/screens/edge/ScreenEmpNo';
 
 type Step = 'idle' | 'camera' | 'recognizing' | 'success' | 'failure' | 'permission-denied' | 'empno';
 
-const FACE_CONFIDENCE_THRESHOLD = 0.7;
-const FACE_HOLD_MS = 1000;
+const FACE_CONFIDENCE_THRESHOLD = 0.75; // raised from 0.7 to avoid jitter at the boundary
+const FACE_HOLD_MS = 1200; // raised from 1000 — gives the user time to settle
 const POLL_INTERVAL_MS = 100;
-const AUTO_RETURN_MS = 3000;
+const AUTO_RETURN_SUCCESS_MS = 3000;
+const AUTO_RETURN_FAILURE_MS = 4500; // longer than success so failure cycles slow down
+const POST_TERMINAL_COOLDOWN_MS = 1500; // ignore face presence right after returning to idle
 
 export default function KioskApp() {
   const [step, setStep] = useState<Step>('idle');
@@ -27,6 +29,16 @@ export default function KioskApp() {
   const [checkType, setCheckType] = useState<'check_in' | 'check_out'>('check_in');
   const [recognizedAt, setRecognizedAt] = useState<Date | null>(null);
   const [summary, setSummary] = useState<KioskSummary | null>(null);
+  /**
+   * Bounding box of the most recent detected face, in **video pixel space**
+   * (not screen pixels). ScreenCamera/ScreenRecognizing render an SVG overlay
+   * on top of the live <video> using these numbers, so the user can see the
+   * kiosk is tracking *their* face — not just spinning a generic animation.
+   */
+  const [faceBox, setFaceBox] = useState<{ x: number; y: number; width: number; height: number; videoW: number; videoH: number } | null>(null);
+  /** dataURL of the cropped face used for embedding extraction. Surfaces in
+   *  ScreenRecognizing so it's obvious which exact image is being analyzed. */
+  const [capturedFace, setCapturedFace] = useState<string | null>(null);
 
   // Live status — surfaced in a tiny overlay so an operator can confirm at a
   // glance that the camera is actually streaming and the detector is loaded.
@@ -56,6 +68,11 @@ export default function KioskApp() {
   stepRef.current = step;
   const checkTypeRef = useRef(checkType);
   checkTypeRef.current = checkType;
+  /** Timestamp of the last entry into idle. We refuse to start a new face hold
+   *  until POST_TERMINAL_COOLDOWN_MS has passed — otherwise a single user
+   *  standing in front of the kiosk after a failure would immediately retrigger
+   *  another recognition cycle and the screen would flap every few seconds. */
+  const idleEnteredAtRef = useRef<number>(performance.now());
 
   // Start camera on mount
   useEffect(() => {
@@ -113,8 +130,28 @@ export default function KioskApp() {
       // Always surface the live confidence so operators can see detection working
       setFaceConfidence(best ? best.confidence : null);
 
+      // Update the live face bounding box for SVG overlay
+      if (best) {
+        setFaceBox({
+          x: best.bbox.x,
+          y: best.bbox.y,
+          width: best.bbox.width,
+          height: best.bbox.height,
+          videoW: video.videoWidth || 1280,
+          videoH: video.videoHeight || 720,
+        });
+      } else if (currentStep === 'idle' || currentStep === 'camera') {
+        setFaceBox(null);
+      }
+
       // --- idle: watch for sustained face presence ---
       if (currentStep === 'idle') {
+        // Cooldown: don't restart the face-hold timer for the first 1.5s after
+        // returning to idle. Prevents fast cycle of failure → idle → camera again.
+        if (performance.now() - idleEnteredAtRef.current < POST_TERMINAL_COOLDOWN_MS) {
+          faceFirstSeenRef.current = null;
+          return;
+        }
         if (best && best.confidence >= FACE_CONFIDENCE_THRESHOLD) {
           if (!faceFirstSeenRef.current) {
             faceFirstSeenRef.current = performance.now();
@@ -142,6 +179,22 @@ export default function KioskApp() {
           }
 
           const imageData = cropAndAlign(video, best.bbox);
+
+          // Surface the cropped face as a thumbnail so the user sees exactly
+          // which frame the kiosk is analyzing.
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = imageData.width;
+            canvas.height = imageData.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.putImageData(imageData, 0, 0);
+              setCapturedFace(canvas.toDataURL('image/jpeg', 0.85));
+            }
+          } catch {
+            // best-effort — don't block recognition on thumbnail failures
+          }
+
           const embedding = await extractEmbedding(imageData);
 
           const result = await matchFace({
@@ -169,16 +222,22 @@ export default function KioskApp() {
     return () => clearInterval(id);
   }, []);
 
-  // Auto-return from terminal states
+  // Auto-return from terminal states. Failure waits longer than success so the
+  // user has time to read why it failed, and so a person standing in front of
+  // the kiosk doesn't immediately retrigger another cycle.
   useEffect(() => {
     if (step !== 'success' && step !== 'failure') return;
+    const ms = step === 'success' ? AUTO_RETURN_SUCCESS_MS : AUTO_RETURN_FAILURE_MS;
     const id = window.setTimeout(() => {
       setStep('idle');
       setEmployee(null);
       setError(null);
       setRecognizedAt(null);
+      setCapturedFace(null);
+      setFaceBox(null);
       recognizingRef.current = false;
-    }, AUTO_RETURN_MS);
+      idleEnteredAtRef.current = performance.now();
+    }, ms);
     return () => clearTimeout(id);
   }, [step]);
 
@@ -204,7 +263,10 @@ export default function KioskApp() {
 
   const handleRetry = useCallback(() => {
     setError(null);
+    setCapturedFace(null);
+    setFaceBox(null);
     recognizingRef.current = false;
+    idleEnteredAtRef.current = performance.now();
     setStep('idle');
   }, []);
 
@@ -214,9 +276,10 @@ export default function KioskApp() {
       style={{ width: '100%', minHeight: '100dvh', position: 'relative' }}
     >
       {/*
-        Single persistent <video> element. Hidden during idle / recognizing /
-        success / failure so the kiosk shows the designed screens. During the
-        camera step the same element is rescaled to cover the viewport.
+        Single persistent <video> element. Visible as fullscreen background
+        during BOTH camera and recognizing so the user keeps seeing themselves
+        through the analysis (no jarring cut-to-black). Hidden in idle/success/
+        failure where the designed screens own the visuals.
       */}
       <video
         ref={videoRefCallback}
@@ -224,11 +287,17 @@ export default function KioskApp() {
         playsInline
         muted
         style={
-          step === 'camera'
+          step === 'camera' || step === 'recognizing'
             ? { position: 'fixed', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }
             : { position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }
         }
       />
+
+      {/* Live face-detection overlay — drawn on top of the video during
+          camera/recognizing so the user can see the kiosk is tracking them. */}
+      {(step === 'camera' || step === 'recognizing') && faceBox && (
+        <FaceBoxOverlay box={faceBox} active={step === 'recognizing'} />
+      )}
 
       {/* Live status overlay — visible on every step. Confirms the kiosk is
           really running ONNX/MediaPipe instead of a canned demo. */}
@@ -254,7 +323,7 @@ export default function KioskApp() {
         />
       )}
       {step === 'camera' && <ScreenCamera type={checkType} onTypeChange={setCheckType} onBack={() => setStep('idle')} />}
-      {step === 'recognizing' && <ScreenRecognizing />}
+      {step === 'recognizing' && <ScreenRecognizing capturedFace={capturedFace} />}
       {step === 'success' && (
         <ScreenSuccess
           employee={employee ?? undefined}
@@ -330,6 +399,64 @@ function StatusOverlay({ cameraState, detectorReady, faceConfidence, step }: Sta
       )}
       <Pill color="#3182F6" label={`step: ${step}`} />
     </div>
+  );
+}
+
+interface FaceBoxOverlayProps {
+  box: { x: number; y: number; width: number; height: number; videoW: number; videoH: number };
+  active: boolean;
+}
+
+/**
+ * Draws the live face bounding box on top of the fullscreen video. The
+ * coordinates from MediaPipe are in video pixel space, but the video uses
+ * `object-fit: cover`, so we map video-px → viewport-px with the same cover
+ * math the browser uses internally (scale = max(viewportW/videoW, viewportH/videoH)).
+ */
+function FaceBoxOverlay({ box, active }: FaceBoxOverlayProps) {
+  const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight });
+  useEffect(() => {
+    const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const scale = Math.max(vp.w / box.videoW, vp.h / box.videoH);
+  const renderedW = box.videoW * scale;
+  const renderedH = box.videoH * scale;
+  const offsetX = (vp.w - renderedW) / 2;
+  const offsetY = (vp.h - renderedH) / 2;
+
+  // user-facing camera is mirrored visually (the browser doesn't mirror by
+  // default but most kiosk styles do), so we mirror the X coordinate.
+  const left = offsetX + (box.videoW - box.x - box.width) * scale;
+  const top = offsetY + box.y * scale;
+  const w = box.width * scale;
+  const h = box.height * scale;
+
+  const color = active ? '#3182F6' : 'rgba(255,255,255,0.85)';
+  const corner = Math.max(20, Math.min(40, w * 0.15));
+
+  return (
+    <svg
+      width={vp.w}
+      height={vp.h}
+      style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none' }}
+    >
+      {/* corner ticks */}
+      {([
+        [left, top, 1, 1],
+        [left + w, top, -1, 1],
+        [left, top + h, 1, -1],
+        [left + w, top + h, -1, -1],
+      ] as [number, number, number, number][]).map(([cx, cy, dx, dy], i) => (
+        <g key={i} stroke={color} strokeWidth="3" strokeLinecap="round" fill="none"
+           style={{ filter: active ? 'drop-shadow(0 0 8px rgba(49,130,246,.7))' : undefined }}>
+          <path d={`M${cx} ${cy} L${cx + dx * corner} ${cy}`} />
+          <path d={`M${cx} ${cy} L${cx} ${cy + dy * corner}`} />
+        </g>
+      ))}
+    </svg>
   );
 }
 
