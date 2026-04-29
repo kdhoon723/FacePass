@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 export default function ScreenEnrollIntro() {
@@ -7,8 +6,6 @@ export default function ScreenEnrollIntro() {
       style={{
         width: '100%',
         minHeight: '100dvh',
-        maxWidth: 480,
-        margin: '0 auto',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -33,7 +30,6 @@ export default function ScreenEnrollIntro() {
         }}
       />
 
-      <StatusBar />
 
       {/* Nav row */}
       <div
@@ -90,7 +86,6 @@ export default function ScreenEnrollIntro() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto',
             position: 'relative',
           }}
         >
@@ -284,7 +279,6 @@ export default function ScreenEnrollIntro() {
           시작하기
         </button>
       </div>
-      <HomeIndicator />
     </div>
   );
 }

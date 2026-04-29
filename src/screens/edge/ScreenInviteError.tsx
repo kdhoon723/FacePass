@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 const FX_BLUE = tokens.brand;
@@ -15,8 +14,6 @@ export default function ScreenInviteError() {
       style={{
         width: '100%',
         minHeight: '100dvh',
-        maxWidth: 480,
-        margin: '0 auto',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -38,7 +35,6 @@ export default function ScreenInviteError() {
             'radial-gradient(ellipse at center, rgba(239,68,82,.10) 0%, rgba(239,68,82,0) 65%)',
         }}
       />
-      <StatusBar />
 
       <div
         style={{
@@ -299,7 +295,6 @@ export default function ScreenInviteError() {
           도움말 보기
         </button>
       </div>
-      <HomeIndicator />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 const FP_BLUE = tokens.brand;
@@ -10,11 +9,10 @@ const FP_GREEN = tokens.success;
 
 export default function ScreenSuccess() {
   return (
-    <div style={{ width: '100%', minHeight: '100dvh', maxWidth: 480, margin: '0 auto', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
+    <div style={{ width: '100%', minHeight: '100dvh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
       {/* Soft success aura */}
       <div style={{ position: 'absolute', top: -100, left: '50%', transform: 'translateX(-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse at center, rgba(49,130,246,.10) 0%, rgba(49,130,246,0) 70%)' }} />
 
-      <StatusBar />
 
       {/* Top close */}
       <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -84,7 +82,6 @@ export default function ScreenSuccess() {
           확인
         </button>
       </div>
-      <HomeIndicator />
     </div>
   );
 }

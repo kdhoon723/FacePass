@@ -1,4 +1,4 @@
-import { StatusBar, HomeIndicator, FPLogo } from '@/components/common';
+import { FPLogo } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 const FP_BLUE = tokens.brand;
@@ -10,11 +10,10 @@ const FP_GREEN = tokens.success;
 
 export default function ScreenIdle() {
   return (
-    <div style={{ width: '100%', minHeight: '100dvh', maxWidth: 480, margin: '0 auto', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
+    <div style={{ width: '100%', minHeight: '100dvh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
       {/* Soft brand aura */}
       <div style={{ position: 'absolute', top: -120, left: '50%', transform: 'translateX(-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse at center, rgba(49,130,246,.10) 0%, rgba(49,130,246,0) 65%)', pointerEvents: 'none' }} />
 
-      <StatusBar />
 
       {/* Top: company brand + connection */}
       <div style={{ position: 'relative', padding: '12px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -91,7 +90,6 @@ export default function ScreenIdle() {
           얼굴 인식이 안 되시나요? <span style={{ color: FP_GRAY_900 }}>사번으로 입력</span>
         </button>
       </div>
-      <HomeIndicator />
     </div>
   );
 }

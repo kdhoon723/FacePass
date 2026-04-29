@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 const FP_BLUE = tokens.brand;
@@ -8,13 +7,12 @@ const FP_RED = tokens.danger;
 
 export default function ScreenCamera() {
   return (
-    <div style={{ width: '100%', minHeight: '100dvh', maxWidth: 480, margin: '0 auto', background: '#0E1116', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
+    <div style={{ width: '100%', minHeight: '100dvh', background: '#0E1116', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
       {/* Simulated camera feed — soft gradient background hinting at a person */}
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 38%, #3a4252 0%, #1c2230 45%, #0a0d12 100%)' }} />
       {/* Subtle face hint silhouette */}
       <div style={{ position: 'absolute', left: '50%', top: 320, transform: 'translate(-50%,-50%)', width: 200, height: 250, borderRadius: '48%', background: 'radial-gradient(ellipse at center, rgba(255,200,170,.15) 0%, rgba(255,200,170,0) 70%)' }} />
 
-      <StatusBar dark />
 
       {/* Top bar */}
       <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -74,7 +72,6 @@ export default function ScreenCamera() {
           </div>
         </div>
       </div>
-      <HomeIndicator dark />
     </div>
   );
 }

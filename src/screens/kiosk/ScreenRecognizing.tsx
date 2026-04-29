@@ -1,15 +1,13 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 const FP_BLUE = tokens.brand;
 
 export default function ScreenRecognizing() {
   return (
-    <div style={{ width: '100%', minHeight: '100dvh', maxWidth: 480, margin: '0 auto', background: '#0E1116', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
+    <div style={{ width: '100%', minHeight: '100dvh', background: '#0E1116', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 38%, #3a4252 0%, #1c2230 45%, #0a0d12 100%)' }} />
       <div style={{ position: 'absolute', left: '50%', top: 360, transform: 'translate(-50%,-50%)', width: 220, height: 270, borderRadius: '48%', background: 'radial-gradient(ellipse at center, rgba(255,200,170,.18) 0%, rgba(255,200,170,0) 70%)' }} />
 
-      <StatusBar dark />
 
       <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ width: 40 }} />
@@ -79,7 +77,6 @@ export default function ScreenRecognizing() {
           ))}
         </div>
       </div>
-      <HomeIndicator dark />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 const FX_BLUE = tokens.brand;
@@ -15,8 +14,6 @@ export default function ScreenEmpNo() {
       style={{
         width: '100%',
         minHeight: '100dvh',
-        maxWidth: 480,
-        margin: '0 auto',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -26,7 +23,6 @@ export default function ScreenEmpNo() {
         overflow: 'hidden auto',
       }}
     >
-      <StatusBar />
 
       {/* Top bar */}
       <div
@@ -211,7 +207,6 @@ export default function ScreenEmpNo() {
           )}
         </div>
       </div>
-      <HomeIndicator />
     </div>
   );
 }

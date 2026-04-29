@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 export default function ScreenEnrollDone() {
@@ -7,8 +6,6 @@ export default function ScreenEnrollDone() {
       style={{
         width: '100%',
         minHeight: '100dvh',
-        maxWidth: 480,
-        margin: '0 auto',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -32,7 +29,6 @@ export default function ScreenEnrollDone() {
         }}
       />
 
-      <StatusBar />
 
       {/* Nav row */}
       <div
@@ -221,7 +217,6 @@ export default function ScreenEnrollDone() {
           다시 등록하기
         </button>
       </div>
-      <HomeIndicator />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 const FX_BLUE = tokens.brand;
@@ -14,8 +13,6 @@ export default function ScreenPermPrime() {
       style={{
         width: '100%',
         minHeight: '100dvh',
-        maxWidth: 480,
-        margin: '0 auto',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -37,7 +34,6 @@ export default function ScreenPermPrime() {
             'radial-gradient(ellipse at center, rgba(49,130,246,.10) 0%, rgba(49,130,246,0) 65%)',
         }}
       />
-      <StatusBar />
 
       <div
         style={{
@@ -304,7 +300,6 @@ export default function ScreenPermPrime() {
           나중에 하기
         </button>
       </div>
-      <HomeIndicator />
     </div>
   );
 }

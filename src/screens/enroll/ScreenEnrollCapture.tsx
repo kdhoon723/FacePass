@@ -1,4 +1,3 @@
-import { StatusBar, HomeIndicator } from '@/components/common';
 import { tokens } from '@/lib/tokens';
 
 export default function ScreenEnrollCapture() {
@@ -7,8 +6,6 @@ export default function ScreenEnrollCapture() {
       style={{
         width: '100%',
         minHeight: '100dvh',
-        maxWidth: 480,
-        margin: '0 auto',
         background: '#0E1116',
         display: 'flex',
         flexDirection: 'column',
@@ -42,7 +39,6 @@ export default function ScreenEnrollCapture() {
         }}
       />
 
-      <StatusBar dark />
 
       {/* Nav row */}
       <div
@@ -381,7 +377,6 @@ export default function ScreenEnrollCapture() {
         </div>
       </div>
 
-      <HomeIndicator dark />
     </div>
   );
 }
