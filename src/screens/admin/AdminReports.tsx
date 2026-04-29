@@ -49,12 +49,27 @@ function avatarFor(id: string) {
   return AVATAR_GRADIENTS[h % AVATAR_GRADIENTS.length];
 }
 
+type Period = 'weekly' | 'monthly' | 'quarterly';
+
+function downloadCsv(filename: string, header: string, rows: string[]) {
+  const body = rows.join('\n');
+  // BOM for Excel UTF-8 detection
+  const blob = new Blob([`﻿${header}\n${body}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminReports() {
   const [weekData, setWeekData] = useState<WeekDay[] | null>(null);
   const [monthlyData, setMonthlyData] = useState<MonthPoint[] | null>(null);
   const [top5, setTop5] = useState<Top5[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [period, setPeriod] = useState<Period>('weekly');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -99,15 +114,92 @@ export default function AdminReports() {
         subtitle="추세를 한눈에 보고 문제를 빠르게 짚어보세요"
         action={
           <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ display: 'flex', gap: 4, padding: 4, background: A_GRAY_100, borderRadius: 10 }}>
-              {['주간', '월간', '분기'].map((t, i) => (
-                <div key={t} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 13, fontWeight: 700, background: i === 0 ? '#fff' : 'transparent', color: i === 0 ? A_GRAY_900 : A_GRAY_500, cursor: 'pointer' }}>{t}</div>
-              ))}
+            <div
+              role="tablist"
+              style={{ display: 'flex', gap: 4, padding: 4, background: A_GRAY_100, borderRadius: 10 }}
+            >
+              {([
+                { v: 'weekly' as const, l: '주간' },
+                { v: 'monthly' as const, l: '월간' },
+                { v: 'quarterly' as const, l: '분기' },
+              ]).map((t) => {
+                const active = period === t.v;
+                return (
+                  <button
+                    key={t.v}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setPeriod(t.v)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: 7,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      background: active ? '#fff' : 'transparent',
+                      color: active ? A_GRAY_900 : A_GRAY_500,
+                      boxShadow: active ? '0 1px 2px rgba(0,19,43,.06)' : 'none',
+                      cursor: 'pointer',
+                      border: 0,
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    {t.l}
+                  </button>
+                );
+              })}
             </div>
-            <button style={{ height: 40, padding: '0 18px', borderRadius: 10, background: A_BLUE, color: '#fff', border: 0, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>리포트 다운로드</button>
+            <button
+              onClick={() => {
+                if (!weekData && !monthlyData) return;
+                if (period === 'monthly' && monthlyData) {
+                  downloadCsv(
+                    `facepass-monthly-${new Date().toISOString().slice(0, 10)}.csv`,
+                    '월,정시 출근률(%)',
+                    monthlyData.map((m) => `${m.month},${m.on_time_rate}`),
+                  );
+                } else if (weekData) {
+                  downloadCsv(
+                    `facepass-weekly-${new Date().toISOString().slice(0, 10)}.csv`,
+                    '날짜,요일,정시,지각,미출근',
+                    weekData.map((d) => `${d.date},${dayLabel(d.date)},${d.on_time},${d.late},${d.absent}`),
+                  );
+                }
+              }}
+              disabled={loading || (!weekData && !monthlyData)}
+              style={{
+                height: 40,
+                padding: '0 18px',
+                borderRadius: 10,
+                background: A_BLUE,
+                color: '#fff',
+                border: 0,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: loading ? 'default' : 'pointer',
+                opacity: loading ? 0.6 : 1,
+                fontFamily: 'inherit',
+              }}
+            >
+              리포트 다운로드
+            </button>
           </div>
         }
       />
+      {period === 'quarterly' && (
+        <div
+          style={{
+            margin: '16px 28px 0',
+            padding: '12px 16px',
+            background: A_BLUE_WEAK,
+            color: A_BLUE,
+            borderRadius: 10,
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          분기 리포트는 다음 업데이트에서 추가될 예정이에요. 지금은 주간/월간 데이터를 사용해주세요.
+        </div>
+      )}
       <div style={{ flex: 1, overflow: 'auto', padding: 28 }}>
         {/* Insight banner */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 22px', background: 'linear-gradient(120deg, #E8F2FE 0%, #F2F4F6 100%)', borderRadius: 16, marginBottom: 20 }}>

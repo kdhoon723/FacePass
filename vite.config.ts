@@ -44,6 +44,11 @@ export default defineConfig({
         // Cache the ONNX model and large assets aggressively (kiosk runs offline)
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
         maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // 50MB (model)
+        // Take over the page on first install + activate as soon as the new
+        // service worker is ready, so deploys land without an extra reload.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /\.onnx$/i,
