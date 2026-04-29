@@ -7,7 +7,14 @@ const FP_GRAY_200 = tokens.gray200;
 const FP_GRAY_100 = tokens.gray100;
 const FP_GREEN = tokens.success;
 
-export default function ScreenSuccess() {
+interface Props {
+  employee?: { name: string; employee_no: string; department?: string | null };
+  checkType?: 'check_in' | 'check_out';
+}
+
+export default function ScreenSuccess({ employee, checkType = 'check_in' }: Props) {
+  const name = employee?.name ?? '김지원';
+  const initials = name.slice(-2);
   return (
     <div style={{ width: '100%', minHeight: '100dvh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
       {/* Soft success aura */}
@@ -26,7 +33,7 @@ export default function ScreenSuccess() {
         <div style={{ position: 'relative', width: 156, height: 156, margin: '0 auto' }}>
           {/* Profile photo placeholder (gradient + initial) */}
           <div style={{ width: 156, height: 156, borderRadius: 999, background: 'linear-gradient(135deg, #FFCCA8 0%, #FFB582 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 60, fontWeight: 700, color: '#6E4944', letterSpacing: '-0.02em', boxShadow: '0 8px 24px rgba(0,19,43,.10)' }}>
-            지원
+            {initials}
           </div>
           {/* Check badge */}
           <div style={{ position: 'absolute', bottom: 4, right: 4, width: 48, height: 48, borderRadius: 99, background: FP_BLUE, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(49,130,246,.4)' }}>
@@ -34,9 +41,9 @@ export default function ScreenSuccess() {
           </div>
         </div>
 
-        <div style={{ marginTop: 28, fontSize: 17, fontWeight: 700, color: FP_BLUE }}>출근 완료</div>
+        <div style={{ marginTop: 28, fontSize: 17, fontWeight: 700, color: FP_BLUE }}>{checkType === 'check_out' ? '퇴근 완료' : '출근 완료'}</div>
         <div style={{ marginTop: 6, fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.25 }}>
-          김지원님,{'\n'}좋은 하루 보내세요
+          {name}님,{'\n'}좋은 하루 보내세요
         </div>
       </div>
 

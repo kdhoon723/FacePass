@@ -2,7 +2,7 @@ import type { InferenceSession, Tensor } from 'onnxruntime-web';
 import type { FaceEmbedding } from './types';
 import type { FaceDetection } from './types';
 
-const MODEL_PATH = '/models/arcface-mobilefacenet.onnx';
+const MODEL_PATH = '/models/w600k_mbf.onnx';
 const INPUT_SIZE = 112;
 const MEAN = 0.5;
 const STD = 0.5;

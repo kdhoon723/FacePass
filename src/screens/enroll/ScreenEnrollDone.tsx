@@ -1,6 +1,18 @@
 import { tokens } from '@/lib/tokens';
 
-export default function ScreenEnrollDone() {
+interface Props {
+  employee?: { name: string; employee_no: string; dept?: string | null };
+}
+
+export default function ScreenEnrollDone({ employee }: Props = {}) {
+  const name = employee?.name ?? '김지원';
+  const initials = name.slice(-2);
+  const employeeNo = employee?.employee_no ?? 'EMP-0142';
+  const dept = employee?.dept ?? '프로덕트 디자인';
+  const enrolledAt = new Date().toLocaleString('ko-KR', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  }).replace(/\. /g, '.').replace(/\.$/, '');
   return (
     <div
       style={{
@@ -68,7 +80,7 @@ export default function ScreenEnrollDone() {
               boxShadow: '0 8px 24px rgba(0,19,43,.10)',
             }}
           >
-            지원
+            {initials}
           </div>
           {/* Check badge */}
           <div
@@ -140,9 +152,9 @@ export default function ScreenEnrollDone() {
           }}
         >
           {[
-            { label: '이름', value: '김지원' },
-            { label: '사번 / 부서', value: 'EMP-0142 · 프로덕트 디자인' },
-            { label: '등록 시각', value: '2026.04.29 14:23' },
+            { label: '이름', value: name },
+            { label: '사번 / 부서', value: `${employeeNo} · ${dept}` },
+            { label: '등록 시각', value: enrolledAt },
           ].map((row, i) => (
             <div key={i}>
               {i > 0 && (

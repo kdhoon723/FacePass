@@ -1,6 +1,12 @@
 import { tokens } from '@/lib/tokens';
 
-export default function ScreenEnrollIntro() {
+interface Props {
+  employee?: { name: string; employee_no: string; dept?: string | null };
+  onStart?: () => void;
+}
+
+export default function ScreenEnrollIntro({ employee, onStart }: Props = {}) {
+  const name = employee?.name ?? '김지원';
   return (
     <div
       style={{
@@ -154,7 +160,7 @@ export default function ScreenEnrollIntro() {
             letterSpacing: '-0.02em',
           }}
         >
-          김지원님,{'\n'}얼굴 등록을 시작할게요
+          {name}님,{'\n'}얼굴 등록을 시작할게요
         </div>
         <div
           style={{
@@ -262,6 +268,7 @@ export default function ScreenEnrollIntro() {
 
       <div style={{ padding: '16px 20px 12px' }}>
         <button
+          onClick={onStart}
           style={{
             width: '100%',
             height: 56,

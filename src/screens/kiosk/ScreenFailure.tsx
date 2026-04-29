@@ -20,7 +20,12 @@ const tips: Tip[] = [
   { icon: '📏', title: '30cm 정도 거리에서', desc: '너무 멀거나 가까우면 안 돼요' },
 ];
 
-export default function ScreenFailure() {
+interface Props {
+  error?: string | null;
+  onRetry?: () => void;
+}
+
+export default function ScreenFailure({ error: _error, onRetry }: Props = {}) {
   return (
     <div style={{ width: '100%', minHeight: '100dvh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
       <div style={{ position: 'absolute', top: -100, left: '50%', transform: 'translateX(-50%)', width: 600, height: 360, background: 'radial-gradient(ellipse at center, rgba(239,68,82,.10) 0%, rgba(239,68,82,0) 70%)' }} />
@@ -70,7 +75,7 @@ export default function ScreenFailure() {
       <div style={{ flex: 1 }} />
 
       <div style={{ padding: '16px 20px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <button style={{
+        <button onClick={onRetry} style={{
           width: '100%', height: 56, borderRadius: 16, border: 0,
           background: FP_BLUE, color: '#fff', fontSize: 17, fontWeight: 700,
           fontFamily: 'inherit', cursor: 'pointer',
