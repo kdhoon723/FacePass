@@ -25,6 +25,7 @@ export default function EnrollFlow() {
   const [captureIndex, setCaptureIndex] = useState(0); // 0-based, 0..2
   const [countdown, setCountdown] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [enrolledAt, setEnrolledAt] = useState<Date | null>(null);
 
   const camera = useCamera();
   const videoElRef = useRef<HTMLVideoElement | null>(null);
@@ -134,6 +135,7 @@ export default function EnrollFlow() {
         setCountdown(null);
         try {
           await submitEnrollment(token, embeddingsRef.current);
+          setEnrolledAt(new Date());
           setStep('done');
         } catch {
           alert('등록 중 오류가 발생했어요. 다시 시도해주세요.');
@@ -200,6 +202,7 @@ export default function EnrollFlow() {
       {step === 'done' && (
         <ScreenEnrollDone
           employee={inviteInfo ?? undefined}
+          enrolledAt={enrolledAt ?? undefined}
         />
       )}
     </div>

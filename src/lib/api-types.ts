@@ -21,6 +21,12 @@ export interface MatchResponse {
   log_id?: string;
 }
 
+export interface KioskSummary {
+  checkedInToday: number;
+  totalEmployees: number;
+  lastRecognition?: { name: string; at: string };
+}
+
 export interface InviteValidation {
   valid: boolean;
   employee?: {

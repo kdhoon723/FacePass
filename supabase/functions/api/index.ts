@@ -29,6 +29,7 @@ app.get('/health', (c) => c.json({ ok: true }));
 app.route('/match-face', publicRoutes.matchFace);
 app.route('/invite', publicRoutes.invite);
 app.route('/enroll', publicRoutes.enroll);
+app.route('/kiosk', publicRoutes.kiosk);
 
 // Admin (auth required)
 app.use('/me', requireAdmin);

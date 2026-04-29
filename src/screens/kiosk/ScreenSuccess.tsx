@@ -5,16 +5,49 @@ const FP_GRAY_900 = tokens.gray900;
 const FP_GRAY_600 = tokens.gray600;
 const FP_GRAY_200 = tokens.gray200;
 const FP_GRAY_100 = tokens.gray100;
-const FP_GREEN = tokens.success;
 
 interface Props {
   employee?: { name: string; employee_no: string; department?: string | null };
   checkType?: 'check_in' | 'check_out';
+  /** When the recognition happened (defaults to now). */
+  recognizedAt?: Date;
+  /** Free-form location label (kiosk name + room) */
+  locationLabel?: string;
+  /** Status pill on the right side of the detail card */
+  status?: 'on_time' | 'late' | 'early_leave';
+  /** Consecutive on-time streak in days (hide when undefined) */
+  streakDays?: number;
 }
 
-export default function ScreenSuccess({ employee, checkType = 'check_in' }: Props) {
+function formatKoreanTime(date: Date): string {
+  const h = date.getHours();
+  const ampm = h < 12 ? '오전' : '오후';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  const m = date.getMinutes().toString().padStart(2, '0');
+  const s = date.getSeconds().toString().padStart(2, '0');
+  return `${ampm} ${hour12}:${m}:${s}`;
+}
+
+const STATUS_LABELS: Record<NonNullable<Props['status']>, { label: string; color: string; bg: string }> = {
+  on_time: { label: '정시 출근', color: '#007B33', bg: 'rgba(0,123,51,.1)' },
+  late: { label: '지각', color: '#FF9000', bg: 'rgba(255,144,0,.12)' },
+  early_leave: { label: '조퇴', color: '#FF9000', bg: 'rgba(255,144,0,.12)' },
+};
+
+export default function ScreenSuccess({
+  employee,
+  checkType = 'check_in',
+  recognizedAt,
+  locationLabel = '본사 7층 라운지 · 키오스크',
+  status = 'on_time',
+  streakDays,
+}: Props) {
   const name = employee?.name ?? '김지원';
   const initials = name.slice(-2);
+  const at = recognizedAt ?? new Date();
+  const statusInfo = STATUS_LABELS[status];
+  const checkLabel =
+    checkType === 'check_out' ? (status === 'early_leave' ? '조퇴 처리' : '퇴근 완료') : statusInfo.label;
   return (
     <div style={{ width: '100%', minHeight: '100dvh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden auto' }}>
       {/* Soft success aura */}
@@ -52,30 +85,32 @@ export default function ScreenSuccess({ employee, checkType = 'check_in' }: Prop
         <div style={{ background: FP_GRAY_100, borderRadius: 20, padding: '20px 22px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
             <div style={{ fontSize: 14, color: FP_GRAY_600, fontWeight: 600 }}>인증 시각</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: FP_GRAY_900, fontVariantNumeric: 'tabular-nums' }}>오전 8:42:13</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: FP_GRAY_900, fontVariantNumeric: 'tabular-nums' }}>{formatKoreanTime(at)}</div>
           </div>
           <div style={{ height: 1, background: FP_GRAY_200, margin: '4px 0' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
             <div style={{ fontSize: 14, color: FP_GRAY_600, fontWeight: 600 }}>위치</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: FP_GRAY_900 }}>본사 7층 라운지 · 키오스크</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: FP_GRAY_900 }}>{locationLabel}</div>
           </div>
           <div style={{ height: 1, background: FP_GRAY_200, margin: '4px 0' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
             <div style={{ fontSize: 14, color: FP_GRAY_600, fontWeight: 600 }}>구분</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ padding: '4px 10px', borderRadius: 999, background: 'rgba(0,123,51,.1)', color: FP_GREEN, fontSize: 13, fontWeight: 700 }}>정시 출근</div>
+              <div style={{ padding: '4px 10px', borderRadius: 999, background: statusInfo.bg, color: statusInfo.color, fontSize: 13, fontWeight: 700 }}>{checkLabel}</div>
             </div>
           </div>
         </div>
 
-        {/* Streak */}
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', background: '#FFF8E1', borderRadius: 16 }}>
-          <div style={{ fontSize: 22 }}>🔥</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, color: FP_GRAY_600, fontWeight: 600 }}>연속 정시 출근</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: FP_GRAY_900, marginTop: 1 }}>14일째 이어가는 중이에요</div>
+        {/* Streak — hidden when no streak data is supplied */}
+        {streakDays !== undefined && streakDays > 0 && (
+          <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', background: '#FFF8E1', borderRadius: 16 }}>
+            <div style={{ fontSize: 22 }}>🔥</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: FP_GRAY_600, fontWeight: 600 }}>연속 정시 출근</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: FP_GRAY_900, marginTop: 1 }}>{streakDays}일째 이어가는 중이에요</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div style={{ flex: 1 }} />

@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCamera } from '@/lib/face/useCamera';
 import { createDetector, detectFaces } from '@/lib/face/detector';
 import { cropAndAlign, extractEmbedding } from '@/lib/face/embedding';
-import { matchFace } from '@/lib/api';
-import type { MatchResponse } from '@/lib/api-types';
+import { matchFace, fetchKioskSummary } from '@/lib/api';
+import type { MatchResponse, KioskSummary } from '@/lib/api-types';
 import type { FaceDetector } from '@mediapipe/tasks-vision';
 import ScreenIdle from './ScreenIdle';
 import ScreenCamera from './ScreenCamera';
@@ -24,6 +24,8 @@ export default function KioskApp() {
   const [employee, setEmployee] = useState<MatchResponse['employee'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checkType, setCheckType] = useState<'check_in' | 'check_out'>('check_in');
+  const [recognizedAt, setRecognizedAt] = useState<Date | null>(null);
+  const [summary, setSummary] = useState<KioskSummary | null>(null);
 
   // Live status — surfaced in a tiny overlay so an operator can confirm at a
   // glance that the camera is actually streaming and the detector is loaded.
@@ -148,6 +150,7 @@ export default function KioskApp() {
 
           if (result.matched && result.employee) {
             setEmployee(result.employee);
+            setRecognizedAt(new Date());
             setStep('success');
           } else {
             setError('등록된 직원과 일치하지 않아요');
@@ -172,9 +175,30 @@ export default function KioskApp() {
       setStep('idle');
       setEmployee(null);
       setError(null);
+      setRecognizedAt(null);
       recognizingRef.current = false;
     }, AUTO_RETURN_MS);
     return () => clearTimeout(id);
+  }, [step]);
+
+  // Today summary — refresh on mount, after each terminal state, and every minute
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      fetchKioskSummary()
+        .then((s) => { if (!cancelled) setSummary(s); })
+        .catch(() => { /* swallow — idle screen falls back to dashes */ });
+    };
+    load();
+    const id = window.setInterval(load, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  // Pull a fresh summary right after a successful check-in/out so the idle
+  // screen shows the new "마지막 인증" instantly.
+  useEffect(() => {
+    if (step !== 'success') return;
+    fetchKioskSummary().then(setSummary).catch(() => {});
   }, [step]);
 
   const handleRetry = useCallback(() => {
@@ -214,10 +238,28 @@ export default function KioskApp() {
         step={step}
       />
 
-      {step === 'idle' && <ScreenIdle />}
+      {step === 'idle' && (
+        <ScreenIdle
+          stats={
+            summary
+              ? {
+                  checkedInToday: summary.checkedInToday,
+                  totalEmployees: summary.totalEmployees,
+                  lastRecognition: summary.lastRecognition,
+                }
+              : null
+          }
+        />
+      )}
       {step === 'camera' && <ScreenCamera type={checkType} onTypeChange={setCheckType} />}
       {step === 'recognizing' && <ScreenRecognizing />}
-      {step === 'success' && <ScreenSuccess employee={employee ?? undefined} checkType={checkType} />}
+      {step === 'success' && (
+        <ScreenSuccess
+          employee={employee ?? undefined}
+          checkType={checkType}
+          recognizedAt={recognizedAt ?? undefined}
+        />
+      )}
       {step === 'failure' && <ScreenFailure error={error} onRetry={handleRetry} />}
       {step === 'permission-denied' && <ScreenPermDenied />}
     </div>

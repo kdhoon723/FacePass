@@ -9,6 +9,7 @@ import type {
   EmployeeListPage,
   EmployeeWithInvite,
   InviteValidation,
+  KioskSummary,
   KioskWithEventCount,
   ListEmployeesParams,
   MatchResponse,
@@ -94,6 +95,12 @@ export const submitEnrollment = (token: string, embeddings: number[][]) =>
     body: JSON.stringify({ embeddings }),
     authed: false,
   });
+
+export const fetchKioskSummary = (kioskId?: string) =>
+  request<KioskSummary>(
+    kioskId ? `/kiosk/today-summary?kiosk_id=${encodeURIComponent(kioskId)}` : '/kiosk/today-summary',
+    { authed: false },
+  );
 
 // ---------------------------------------------------------------------------
 // Admin endpoints (auth required)

@@ -2,17 +2,24 @@ import { tokens } from '@/lib/tokens';
 
 interface Props {
   employee?: { name: string; employee_no: string; dept?: string | null };
+  enrolledAt?: Date;
 }
 
-export default function ScreenEnrollDone({ employee }: Props = {}) {
+function formatEnrolledAt(date: Date): string {
+  const y = date.getFullYear();
+  const m = (date.getMonth() + 1).toString().padStart(2, '0');
+  const d = date.getDate().toString().padStart(2, '0');
+  const hh = date.getHours().toString().padStart(2, '0');
+  const mm = date.getMinutes().toString().padStart(2, '0');
+  return `${y}.${m}.${d} ${hh}:${mm}`;
+}
+
+export default function ScreenEnrollDone({ employee, enrolledAt: enrolledAtProp }: Props = {}) {
   const name = employee?.name ?? '김지원';
   const initials = name.slice(-2);
   const employeeNo = employee?.employee_no ?? 'EMP-0142';
   const dept = employee?.dept ?? '프로덕트 디자인';
-  const enrolledAt = new Date().toLocaleString('ko-KR', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit',
-  }).replace(/\. /g, '.').replace(/\.$/, '');
+  const enrolledAt = formatEnrolledAt(enrolledAtProp ?? new Date());
   return (
     <div
       style={{

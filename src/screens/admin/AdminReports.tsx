@@ -1,4 +1,8 @@
+import { useEffect, useState, useCallback } from 'react';
 import AdminTopBar from './_components/AdminTopBar';
+import Skeleton from './_components/Skeleton';
+import EmptyState from './_components/EmptyState';
+import { adminApi } from '../../lib/api';
 
 const A_BLUE = '#3182F6';
 const A_BLUE_WEAK = '#E8F2FE';
@@ -12,20 +16,82 @@ const A_GRAY_50 = '#F9FAFB';
 const A_GRAY_300 = '#B0B8C1';
 const A_ORANGE = '#FF9000';
 
-const weekData = [
-  { d: '월', on: 84, late: 6, absent: 4 },
-  { d: '화', on: 88, late: 4, absent: 2 },
-  { d: '수', on: 86, late: 5, absent: 3 },
-  { d: '목', on: 82, late: 8, absent: 4 },
-  { d: '금', on: 79, late: 9, absent: 6 },
-  { d: '월', on: 87, late: 5, absent: 2 },
-  { d: '화', on: 83, late: 5, absent: 6 },
-];
-const max = 100;
+type WeekDay = { date: string; on_time: number; late: number; absent: number };
+type MonthPoint = { month: string; on_time_rate: number };
+type Top5 = { employee_id: string; days_on_time: number };
 
-const monthlyAvg = [92, 91, 93, 94, 92, 89, 91, 93, 95, 94, 92, 94];
+const MONTH_LABELS: Record<string, string> = {
+  '01': '1월', '02': '2월', '03': '3월', '04': '4월', '05': '5월', '06': '6월',
+  '07': '7월', '08': '8월', '09': '9월', '10': '10월', '11': '11월', '12': '12월',
+};
+
+function monthLabel(ym: string) {
+  const [, m] = ym.split('-');
+  return MONTH_LABELS[m] ?? ym;
+}
+
+function dayLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
+}
+
+const AVATAR_GRADIENTS = [
+  { bg: 'linear-gradient(135deg,#FFCCA8,#FFB582)', tc: '#6E4944' },
+  { bg: 'linear-gradient(135deg,#CDE7FF,#A3CCFF)', tc: '#1E4FA8' },
+  { bg: 'linear-gradient(135deg,#FFE6A8,#FFC84D)', tc: '#7A5500' },
+  { bg: 'linear-gradient(135deg,#D4F0D8,#9ED6A6)', tc: '#1F5C2A' },
+  { bg: 'linear-gradient(135deg,#F0D4F0,#D69ED6)', tc: '#5C1F5C' },
+];
+
+function avatarFor(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return AVATAR_GRADIENTS[h % AVATAR_GRADIENTS.length];
+}
 
 export default function AdminReports() {
+  const [weekData, setWeekData] = useState<WeekDay[] | null>(null);
+  const [monthlyData, setMonthlyData] = useState<MonthPoint[] | null>(null);
+  const [top5, setTop5] = useState<Top5[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const [weekly, monthly] = await Promise.all([
+        adminApi.weeklyReport(),
+        adminApi.monthlyReport(),
+      ]);
+      setWeekData(weekly.data);
+      setMonthlyData(monthly.monthly);
+      setTop5(monthly.top5_attendees);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Compute insight: compare last 2 weeks of monthly data
+  const insightText = (() => {
+    if (!monthlyData || monthlyData.length < 2) return null;
+    const last = monthlyData[monthlyData.length - 1];
+    const prev = monthlyData[monthlyData.length - 2];
+    const diff = last.on_time_rate - prev.on_time_rate;
+    if (diff === 0) return `이번 달 정시 출근률은 ${last.on_time_rate}%로 지난 달과 동일해요`;
+    const sign = diff > 0 ? '+' : '';
+    return `이번 달 정시 출근률이 지난 달 대비 ${sign}${diff}%p ${diff > 0 ? '올랐어요' : '내렸어요'}`;
+  })();
+
+  const maxWeek = weekData ? Math.max(...weekData.map((d) => d.on_time + d.late + d.absent), 1) : 100;
+  const monthlyAvgArr = monthlyData?.map((m) => m.on_time_rate) ?? [];
+
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: A_GRAY_50, fontFamily: 'var(--font-body)' }}>
       <AdminTopBar
@@ -47,10 +113,20 @@ export default function AdminReports() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 22px', background: 'linear-gradient(120deg, #E8F2FE 0%, #F2F4F6 100%)', borderRadius: 16, marginBottom: 20 }}>
           <div style={{ width: 44, height: 44, borderRadius: 14, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✨</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: A_GRAY_900 }}>이번 주는 정시 출근률이 <span style={{ color: A_BLUE }}>2.1%p</span> 올랐어요</div>
-            <div style={{ fontSize: 13, color: A_GRAY_600, marginTop: 2 }}>특히 화요일과 금요일의 9시 직전 러시가 개선됐어요</div>
+            {loading ? (
+              <>
+                <Skeleton height={15} width={280} borderRadius={5} style={{ marginBottom: 8 }} />
+                <Skeleton height={13} width={220} borderRadius={4} />
+              </>
+            ) : insightText ? (
+              <>
+                <div style={{ fontSize: 15, fontWeight: 700, color: A_GRAY_900 }}>{insightText}</div>
+                <div style={{ fontSize: 13, color: A_GRAY_600, marginTop: 2 }}>월간 추이를 기반으로 계산됐어요</div>
+              </>
+            ) : (
+              <div style={{ fontSize: 15, fontWeight: 700, color: A_GRAY_900 }}>데이터가 충분히 쌓이면 인사이트를 보여드려요</div>
+            )}
           </div>
-          <button style={{ padding: '8px 14px', borderRadius: 10, background: '#fff', color: A_GRAY_600, border: 0, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>자세히 보기</button>
         </div>
 
         {/* Stacked bars */}
@@ -70,23 +146,40 @@ export default function AdminReports() {
           </div>
 
           <div style={{ marginTop: 30, display: 'flex', alignItems: 'flex-end', gap: 28, height: 220 }}>
-            {weekData.map((d, i) => {
-              const total = d.on + d.late + d.absent;
-              const onH = (d.on / max) * 200;
-              const lateH = (d.late / max) * 200;
-              const absH = (d.absent / max) * 200;
-              return (
+            {loading ? (
+              Array.from({ length: 7 }).map((_, i) => (
                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                  <div style={{ fontSize: 12, color: A_GRAY_500, fontWeight: 600 }}>{total}명</div>
-                  <div style={{ width: 36, display: 'flex', flexDirection: 'column', borderRadius: 8, overflow: 'hidden' }}>
-                    <div style={{ height: absH, background: A_GRAY_300 }} />
-                    <div style={{ height: lateH, background: A_ORANGE }} />
-                    <div style={{ height: onH, background: A_BLUE }} />
-                  </div>
-                  <div style={{ fontSize: 12, color: A_GRAY_500, fontWeight: 600 }}>{d.d}</div>
+                  <Skeleton height={120 + i * 10} borderRadius={8} />
+                  <Skeleton height={12} width={20} borderRadius={3} />
                 </div>
-              );
-            })}
+              ))
+            ) : error ? (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <EmptyState message="데이터를 불러올 수 없어요" onRetry={fetchData} />
+              </div>
+            ) : !weekData || weekData.length === 0 ? (
+              <div style={{ flex: 1 }}>
+                <EmptyState message="아직 통계가 부족해요" sub="출근 데이터가 쌓이면 차트가 나타나요" />
+              </div>
+            ) : (
+              weekData.map((d, i) => {
+                const total = d.on_time + d.late + d.absent;
+                const onH = (d.on_time / maxWeek) * 200;
+                const lateH = (d.late / maxWeek) * 200;
+                const absH = (d.absent / maxWeek) * 200;
+                return (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                    <div style={{ fontSize: 12, color: A_GRAY_500, fontWeight: 600 }}>{total}명</div>
+                    <div style={{ width: 36, display: 'flex', flexDirection: 'column', borderRadius: 8, overflow: 'hidden' }}>
+                      <div style={{ height: absH, background: A_GRAY_300 }} />
+                      <div style={{ height: lateH, background: A_ORANGE }} />
+                      <div style={{ height: onH, background: A_BLUE }} />
+                    </div>
+                    <div style={{ fontSize: 12, color: A_GRAY_500, fontWeight: 600 }}>{dayLabel(d.date)}</div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -98,34 +191,44 @@ export default function AdminReports() {
             <div style={{ fontSize: 13, color: A_GRAY_500, marginTop: 2 }}>최근 12개월</div>
 
             <div style={{ marginTop: 20, position: 'relative', height: 200 }}>
-              <svg width="100%" height="200" viewBox="0 0 600 200" preserveAspectRatio="none">
-                {[0, 1, 2, 3].map((i) => (
-                  <line key={i} x1="0" y1={20 + i * 50} x2="600" y2={20 + i * 50} stroke={A_GRAY_200} strokeDasharray="3 4" />
-                ))}
-                <defs>
-                  <linearGradient id="rA" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={A_BLUE} stopOpacity="0.25" />
-                    <stop offset="100%" stopColor={A_BLUE} stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                {(() => {
-                  const pts = monthlyAvg.map((v, i) => [40 + i * 50, 200 - ((v - 80) / 20) * 180] as [number, number]);
-                  const path = pts.map(([x, y], i) => (i ? 'L' : 'M') + x + ' ' + y).join(' ');
-                  const area = path + ` L${pts[pts.length - 1][0]} 200 L${pts[0][0]} 200 Z`;
-                  return (
-                    <g>
-                      <path d={area} fill="url(#rA)" />
-                      <path d={path} stroke={A_BLUE} strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                      {pts.map(([x, y], i) => (
-                        <circle key={i} cx={x} cy={y} r={i === pts.length - 1 ? 6 : 3.5} fill="#fff" stroke={A_BLUE} strokeWidth="2.5" />
-                      ))}
-                    </g>
-                  );
-                })()}
-              </svg>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 11, color: A_GRAY_500, fontWeight: 600, padding: '0 16px' }}>
-                {['5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월', '1월', '2월', '3월', '4월'].map((m) => <span key={m}>{m}</span>)}
-              </div>
+              {loading ? (
+                <Skeleton height={200} borderRadius={8} />
+              ) : error || !monthlyData || monthlyData.length === 0 ? (
+                <EmptyState message="데이터를 불러올 수 없어요" onRetry={fetchData} />
+              ) : (
+                <>
+                  <svg width="100%" height="200" viewBox="0 0 600 200" preserveAspectRatio="none">
+                    {[0, 1, 2, 3].map((i) => (
+                      <line key={i} x1="0" y1={20 + i * 50} x2="600" y2={20 + i * 50} stroke={A_GRAY_200} strokeDasharray="3 4" />
+                    ))}
+                    <defs>
+                      <linearGradient id="rA" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={A_BLUE} stopOpacity="0.25" />
+                        <stop offset="100%" stopColor={A_BLUE} stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {(() => {
+                      const n = monthlyAvgArr.length;
+                      const step = n > 1 ? 560 / (n - 1) : 0;
+                      const pts = monthlyAvgArr.map((v, i) => [20 + i * step, 200 - ((v - 80) / 20) * 180] as [number, number]);
+                      const path = pts.map(([x, y], i) => (i ? 'L' : 'M') + x + ' ' + y).join(' ');
+                      const area = path + ` L${pts[pts.length - 1][0]} 200 L${pts[0][0]} 200 Z`;
+                      return (
+                        <g>
+                          <path d={area} fill="url(#rA)" />
+                          <path d={path} stroke={A_BLUE} strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                          {pts.map(([x, y], i) => (
+                            <circle key={i} cx={x} cy={y} r={i === pts.length - 1 ? 6 : 3.5} fill="#fff" stroke={A_BLUE} strokeWidth="2.5" />
+                          ))}
+                        </g>
+                      );
+                    })()}
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 11, color: A_GRAY_500, fontWeight: 600, padding: '0 16px' }}>
+                    {monthlyData.map((m) => <span key={m.month}>{monthLabel(m.month)}</span>)}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -135,23 +238,43 @@ export default function AdminReports() {
               <div style={{ fontSize: 16, fontWeight: 700, color: A_GRAY_900, letterSpacing: '-0.01em' }}>이번 달 우수 출석자</div>
               <div style={{ fontSize: 11, fontWeight: 700, color: A_BLUE, padding: '3px 8px', background: A_BLUE_WEAK, borderRadius: 999 }}>TOP 5</div>
             </div>
-            {[
-              { rank: 1, name: '정태윤', dept: '백엔드', rate: 100, streak: 27, c: 'linear-gradient(135deg,#F0D4F0,#D69ED6)', tc: '#5C1F5C', i: '태' },
-              { rank: 2, name: '김지원', dept: '디자인', rate: 100, streak: 22, c: 'linear-gradient(135deg,#FFCCA8,#FFB582)', tc: '#6E4944', i: '지' },
-              { rank: 3, name: '박서준', dept: 'iOS', rate: 98, streak: 14, c: 'linear-gradient(135deg,#CDE7FF,#A3CCFF)', tc: '#1E4FA8', i: '서' },
-              { rank: 4, name: '윤소희', dept: '그로스', rate: 96, streak: 11, c: 'linear-gradient(135deg,#FFD4D4,#FF9E9E)', tc: '#8C2424', i: '소' },
-              { rank: 5, name: '한도윤', dept: '운영', rate: 95, streak: 9, c: 'linear-gradient(135deg,#D4F0D8,#9ED6A6)', tc: '#1F5C2A', i: '도' },
-            ].map((r, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 24px', borderTop: i ? `1px solid ${A_GRAY_200}` : 'none' }}>
-                <div style={{ width: 24, fontSize: 13, fontWeight: 700, color: r.rank <= 3 ? A_BLUE : A_GRAY_400, textAlign: 'center' }}>#{r.rank}</div>
-                <div style={{ width: 36, height: 36, borderRadius: 12, background: r.c, color: r.tc, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>{r.i}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: A_GRAY_900 }}>{r.name}</div>
-                  <div style={{ fontSize: 12, color: A_GRAY_500, marginTop: 1 }}>{r.dept} · {r.streak}일 연속</div>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 24px', borderTop: i ? `1px solid ${A_GRAY_200}` : 'none' }}>
+                  <Skeleton width={24} height={16} borderRadius={4} />
+                  <Skeleton width={36} height={36} borderRadius={12} />
+                  <div style={{ flex: 1 }}>
+                    <Skeleton height={14} width={80} borderRadius={4} style={{ marginBottom: 4 }} />
+                    <Skeleton height={12} width={100} borderRadius={3} />
+                  </div>
+                  <Skeleton height={15} width={40} borderRadius={4} />
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: A_GRAY_900, fontVariantNumeric: 'tabular-nums' }}>{r.rate}<span style={{ fontSize: 11, color: A_GRAY_500 }}>%</span></div>
-              </div>
-            ))}
+              ))
+            ) : error ? (
+              <EmptyState message="데이터를 불러올 수 없어요" onRetry={fetchData} />
+            ) : !top5 || top5.length === 0 ? (
+              <EmptyState message="아직 통계가 부족해요" sub="30일치 데이터가 쌓이면 표시돼요" />
+            ) : (
+              top5.map((r, i) => {
+                const avatar = avatarFor(r.employee_id);
+                const shortId = r.employee_id.slice(0, 6).toUpperCase();
+                return (
+                  <div key={r.employee_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 24px', borderTop: i ? `1px solid ${A_GRAY_200}` : 'none' }}>
+                    <div style={{ width: 24, fontSize: 13, fontWeight: 700, color: i < 3 ? A_BLUE : A_GRAY_400, textAlign: 'center' }}>#{i + 1}</div>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: avatar.bg, color: avatar.tc, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>
+                      {shortId[0]}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: A_GRAY_900 }}>{shortId}</div>
+                      <div style={{ fontSize: 12, color: A_GRAY_500, marginTop: 1 }}>{r.days_on_time}일 정시 출근</div>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: A_GRAY_900, fontVariantNumeric: 'tabular-nums' }}>
+                      {r.days_on_time}<span style={{ fontSize: 11, color: A_GRAY_500 }}>일</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

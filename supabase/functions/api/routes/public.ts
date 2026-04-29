@@ -164,8 +164,64 @@ enrollApp.post('/:token', async (c) => {
   return c.json({ success: true, employee_id: employeeId });
 });
 
+// GET /kiosk/today-summary?kiosk_id=...
+//
+// Read-only stats for the idle kiosk screen so it can show real numbers
+// instead of hardcoded "83/94 · 윤OO 8:39". Public on purpose — no employee
+// PII goes out beyond the most-recent first character of the matched name.
+const kioskApp = new Hono();
+kioskApp.get('/today-summary', async (c) => {
+  const kioskId = c.req.query('kiosk_id');
+
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  let logsQuery = supabase
+    .from('attendance_logs')
+    .select('employee_id, recognized_at, employees(name)')
+    .gte('recognized_at', startOfDay.toISOString())
+    .eq('type', 'check_in')
+    .order('recognized_at', { ascending: false });
+
+  if (kioskId) logsQuery = logsQuery.eq('kiosk_id', kioskId);
+
+  const { data: logs, error: logsErr } = await logsQuery;
+  if (logsErr) {
+    console.error('[kiosk-summary] logs error:', logsErr);
+    throw new AppError(logsErr.message, 500, 'LOGS_ERROR');
+  }
+
+  const uniqueEmployees = new Set((logs ?? []).map((l) => l.employee_id));
+
+  const { count: totalEmployees } = await supabase
+    .from('employees')
+    .select('id', { count: 'exact', head: true })
+    .is('deleted_at', null);
+
+  const last = logs?.[0];
+  let lastRecognition: { name: string; at: string } | undefined;
+  if (last) {
+    const emp = Array.isArray(last.employees) ? last.employees[0] : last.employees;
+    if (emp?.name) {
+      const at = new Date(last.recognized_at).toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      lastRecognition = { name: emp.name, at };
+    }
+  }
+
+  return c.json({
+    checkedInToday: uniqueEmployees.size,
+    totalEmployees: totalEmployees ?? 0,
+    lastRecognition,
+  });
+});
+
 export const publicRoutes = {
   matchFace: matchFaceApp,
   invite: inviteApp,
   enroll: enrollApp,
+  kiosk: kioskApp,
 };
