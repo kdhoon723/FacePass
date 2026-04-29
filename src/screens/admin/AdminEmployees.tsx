@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import QRCode from 'qrcode';
 import AdminTopBar from './_components/AdminTopBar';
 import StatTile from './_components/StatTile';
 import Skeleton from './_components/Skeleton';
@@ -75,6 +76,8 @@ export default function AdminEmployees() {
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
@@ -135,7 +138,41 @@ export default function AdminEmployees() {
     }
   };
 
-  const inviteUrl = inviteToken ? `facepass.app/e/${inviteToken}` : 'facepass.app/e/——';
+  const inviteUrl = inviteToken
+    ? `${window.location.origin}/enroll/${inviteToken}`
+    : `${window.location.origin}/enroll/——`;
+
+  // Render a real QR that actually navigates to the enrollment page
+  useEffect(() => {
+    if (!inviteToken) {
+      setQrDataUrl(null);
+      return;
+    }
+    QRCode.toDataURL(inviteUrl, {
+      margin: 0,
+      width: 192,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#191F28', light: '#ffffff' },
+    })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(null));
+  }, [inviteToken, inviteUrl]);
+
+  const handleCopyLink = async () => {
+    if (!inviteToken) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = inviteUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setLinkCopied(true);
+    window.setTimeout(() => setLinkCopied(false), 2000);
+  };
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: A_GRAY_50, fontFamily: 'var(--font-body)' }}>
@@ -252,25 +289,47 @@ export default function AdminEmployees() {
               </div>
             </div>
 
-            {/* QR preview */}
+            {/* QR + invite URL */}
             <div style={{ marginTop: 18, padding: 14, background: A_GRAY_100, borderRadius: 14, display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 64, height: 64, borderRadius: 10, background: '#fff', padding: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {inviteToken ? (
-                  <svg width="100%" height="100%" viewBox="0 0 21 21">
-                    {['1111111000-0000-0000111', '10000000-0000-000000010', '1000-0000-0000101110101', '1000-0000-0000101110100', '1000-0000-0000101110101', '10000000-0000-000000010', '1111111000-0000-0000111', '0000000000-0000-0000000', '110000-0000-00000110011', '000-0000-0000000-0000-0000', '1000-0000-0000001011010', '110000-0000-00000100110', '000-0000-0000000-0000-0000', '0000000000-0000-0000001', '1111111000-0000-0000010', '10000000-0000-000010110', '1000-0000-0000100110001', '1000-0000-0000111100100', '1000-0000-0000100100010', '10000000-0000-000010010', '1111111000-0000-0000001'].map((row, y) =>
-                      row.split('').map((c, x) =>
-                        c === '1' ? <rect key={x + ',' + y} x={x} y={y} width="1" height="1" fill="#191F28" /> : null
-                      )
-                    )}
-                  </svg>
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 10,
+                  background: '#fff',
+                  padding: 6,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {qrDataUrl ? (
+                  <img src={qrDataUrl} alt="등록 QR" style={{ width: '100%', height: '100%' }} />
                 ) : (
-                  <div style={{ fontSize: 24, color: A_GRAY_300 }}>QR</div>
+                  <div style={{ fontSize: 14, color: A_GRAY_300, fontWeight: 700 }}>QR</div>
                 )}
               </div>
-              <div style={{ flex: 1, fontSize: 12, color: A_GRAY_600, lineHeight: 1.5 }}>
-                직원이 이 QR을 스캔하거나{' '}
-                <b style={{ color: A_GRAY_900 }}>{inviteUrl}</b>
-                로 접속하면 등록을 시작해요
+              <div style={{ flex: 1, fontSize: 12, color: A_GRAY_600, lineHeight: 1.5, minWidth: 0 }}>
+                {inviteToken ? (
+                  <>
+                    이 QR을 스캔하거나 아래 링크로 접속해요
+                    <div
+                      style={{
+                        marginTop: 4,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: A_GRAY_900,
+                        wordBreak: 'break-all',
+                        fontFamily: 'var(--font-mono, ui-monospace), monospace',
+                      }}
+                    >
+                      {inviteUrl}
+                    </div>
+                  </>
+                ) : (
+                  <>초대를 발송하면 등록 링크가 여기에 표시돼요</>
+                )}
               </div>
             </div>
 
@@ -278,16 +337,108 @@ export default function AdminEmployees() {
               <div style={{ marginTop: 8, fontSize: 12, color: A_RED, fontWeight: 600 }}>{inviteError}</div>
             )}
             {inviteToken && (
-              <div style={{ marginTop: 8, fontSize: 12, color: A_GREEN, fontWeight: 600 }}>초대 링크가 발송됐어요!</div>
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: '10px 12px',
+                  background: 'rgba(0,123,51,.08)',
+                  borderRadius: 10,
+                  fontSize: 12,
+                  color: A_GREEN,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                초대가 발송됐어요. 직원에게 위 링크를 전달해주세요.
+              </div>
             )}
 
-            <button
-              onClick={handleInvite}
-              disabled={inviting}
-              style={{ width: '100%', marginTop: 14, height: 48, borderRadius: 12, background: inviting ? A_GRAY_300 : A_BLUE, color: '#fff', border: 0, fontSize: 14, fontWeight: 700, cursor: inviting ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
-            >
-              {inviting ? '발송 중...' : '초대 링크 발송'}
-            </button>
+            {inviteToken ? (
+              <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+                <button
+                  onClick={handleCopyLink}
+                  style={{
+                    flex: 1,
+                    height: 48,
+                    borderRadius: 12,
+                    background: linkCopied ? A_GREEN : A_BLUE,
+                    color: '#fff',
+                    border: 0,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  {linkCopied ? (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      복사됨!
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                      </svg>
+                      링크 복사
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setInviteToken(null);
+                    setInviteError('');
+                  }}
+                  style={{
+                    height: 48,
+                    padding: '0 16px',
+                    borderRadius: 12,
+                    background: '#fff',
+                    color: A_GRAY_700,
+                    border: `1px solid ${A_GRAY_200}`,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  새 초대
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleInvite}
+                disabled={inviting}
+                style={{
+                  width: '100%',
+                  marginTop: 14,
+                  height: 48,
+                  borderRadius: 12,
+                  background: inviting ? A_GRAY_300 : A_BLUE,
+                  color: '#fff',
+                  border: 0,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: inviting ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {inviting ? '발송 중...' : '초대 링크 발송'}
+              </button>
+            )}
             <div style={{ marginTop: 8, textAlign: 'center', fontSize: 12, color: A_GRAY_500 }}>링크는 72시간 동안 유효해요</div>
           </div>
 
