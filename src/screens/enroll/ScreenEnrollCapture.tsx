@@ -5,15 +5,17 @@ export default function ScreenEnrollCapture() {
   return (
     <div
       style={{
-        width: 390,
-        height: 844,
+        width: '100%',
+        minHeight: '100dvh',
+        maxWidth: 480,
+        margin: '0 auto',
         background: '#0E1116',
         display: 'flex',
         flexDirection: 'column',
         fontFamily: 'var(--font-body)',
         color: '#fff',
         position: 'relative',
-        overflow: 'hidden',
+        overflow: 'hidden auto',
       }}
     >
       {/* Camera bg gradient */}

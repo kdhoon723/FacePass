@@ -77,13 +77,12 @@ export default function AdminLogin() {
   return (
     <div
       style={{
-        width: 1440,
-        height: 900,
+        width: '100%',
+        minHeight: '100dvh',
         display: 'flex',
         fontFamily: 'var(--font-body)',
         color: AX_GRAY_900,
         overflow: 'hidden',
-        borderRadius: 12,
       }}
     >
       {/* Left brand panel */}

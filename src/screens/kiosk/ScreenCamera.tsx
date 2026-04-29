@@ -8,7 +8,7 @@ const FP_RED = tokens.danger;
 
 export default function ScreenCamera() {
   return (
-    <div style={{ width: 390, height: 844, background: '#0E1116', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: '100%', minHeight: '100dvh', maxWidth: 480, margin: '0 auto', background: '#0E1116', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
       {/* Simulated camera feed — soft gradient background hinting at a person */}
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 38%, #3a4252 0%, #1c2230 45%, #0a0d12 100%)' }} />
       {/* Subtle face hint silhouette */}

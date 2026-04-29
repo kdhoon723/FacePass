@@ -13,15 +13,17 @@ export default function ScreenEmpNo() {
   return (
     <div
       style={{
-        width: 390,
-        height: 844,
+        width: '100%',
+        minHeight: '100dvh',
+        maxWidth: 480,
+        margin: '0 auto',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
         fontFamily: 'var(--font-body)',
         color: FX_GRAY_900,
         position: 'relative',
-        overflow: 'hidden',
+        overflow: 'hidden auto',
       }}
     >
       <StatusBar />

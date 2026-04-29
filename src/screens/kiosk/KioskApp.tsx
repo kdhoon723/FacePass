@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { PhoneShell } from '@/components/common';
 import ScreenIdle from './ScreenIdle';
 import ScreenCamera from './ScreenCamera';
 import ScreenRecognizing from './ScreenRecognizing';
@@ -9,21 +8,19 @@ import ScreenFailure from './ScreenFailure';
 type KioskStep = 'idle' | 'camera' | 'recognizing' | 'success' | 'failure';
 
 /**
- * Auto-advancing demo state machine for the kiosk flow.
+ * Kiosk state machine.
  *
- *   idle → camera → recognizing → (success | failure) → idle
+ *   idle → (user tap) → camera → recognizing → (success | failure) → idle
  *
- * Each step holds for the duration in `STEP_MS`. Tapping anywhere drops back
- * to idle (operator can interrupt). Once camera + ONNX inference are wired in
- * (see `src/lib/face/`), recognizing transitions become real instead of timed,
- * and idle→camera will be triggered by face-presence detection.
+ * idle no longer auto-advances — the user (or future face-presence detection)
+ * triggers entry. Camera/recognizing use mock timers until ONNX is integrated.
  */
-const STEP_MS: Record<KioskStep, number> = {
-  idle: 5000, // simulated "person approaches" trigger
-  camera: 1800,
-  recognizing: 1300,
-  success: 3500,
-  failure: 4500,
+const STEP_MS: Partial<Record<KioskStep, number>> = {
+  // idle: NO auto-advance — wait for user tap or face-presence detection
+  camera: 2000,       // mock: detect face after 2s
+  recognizing: 1300,  // mock: inference time
+  success: 3000,
+  failure: 4000,
 };
 
 function nextStep(current: KioskStep): KioskStep {
@@ -46,23 +43,22 @@ export default function KioskApp() {
 
   useEffect(() => {
     const ms = STEP_MS[step];
+    if (ms === undefined) return;
     const id = window.setTimeout(() => setStep((prev) => nextStep(prev)), ms);
     return () => window.clearTimeout(id);
   }, [step]);
 
   return (
-    <PhoneShell>
-      <div
-        role="presentation"
-        onClick={() => setStep('idle')}
-        style={{ width: '100%', height: '100%', cursor: step === 'idle' ? 'default' : 'pointer' }}
-      >
-        {step === 'idle' && <ScreenIdle />}
-        {step === 'camera' && <ScreenCamera />}
-        {step === 'recognizing' && <ScreenRecognizing />}
-        {step === 'success' && <ScreenSuccess />}
-        {step === 'failure' && <ScreenFailure />}
-      </div>
-    </PhoneShell>
+    <div
+      role="presentation"
+      onClick={() => { if (step === 'idle') setStep('camera'); }}
+      style={{ width: '100%', minHeight: '100dvh', cursor: step === 'idle' ? 'pointer' : 'default' }}
+    >
+      {step === 'idle' && <ScreenIdle />}
+      {step === 'camera' && <ScreenCamera />}
+      {step === 'recognizing' && <ScreenRecognizing />}
+      {step === 'success' && <ScreenSuccess />}
+      {step === 'failure' && <ScreenFailure />}
+    </div>
   );
 }
