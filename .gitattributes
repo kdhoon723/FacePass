@@ -1,0 +1,13 @@
+# Normalize line endings on commit, no matter what the contributor's OS does.
+* text=auto eol=lf
+
+# Ensure binary files stay intact.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.onnx binary
+*.tflite binary
+*.woff binary
+*.woff2 binary

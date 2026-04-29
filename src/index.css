@@ -1,0 +1,155 @@
+@import 'tailwindcss';
+@import '@fontsource/pretendard/variable.css';
+
+/*
+  FacePass design tokens — derived from the Toss Design System (TDS Mobile UI Kit).
+  Tailwind v4 reads these via @theme so utilities like `bg-brand`, `text-gray-600`,
+  `rounded-3xl`, `shadow-card` resolve to the correct values.
+*/
+@theme {
+  /* Brand */
+  --color-brand: #3182f6;
+  --color-brand-pressed: #2365cf;
+  --color-brand-strong: #007ff3;
+  --color-brand-weak: #e8f2fe;
+
+  /* Neutral scale */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f2f4f6;
+  --color-gray-150: #ececec;
+  --color-gray-200: #e5e8eb;
+  --color-gray-300: #b0b8c1;
+  --color-gray-400: #8b95a1;
+  --color-gray-500: #6b7683;
+  --color-gray-600: #4e5968;
+  --color-gray-700: #333d4b;
+  --color-gray-800: #2e3d51;
+  --color-gray-900: #191f28;
+
+  /* Semantic */
+  --color-success: #007b33;
+  --color-danger: #ef4452;
+  --color-warning: #ff9000;
+  --color-attention: #ffc84d;
+  --color-amber: #f59e0b;
+
+  /* Illustration palette */
+  --color-cream: #ffcca8;
+  --color-orange-warm: #ffb582;
+  --color-brown-earth: #6e4944;
+
+  /* Typography */
+  --font-display:
+    'Pretendard Variable', Pretendard, 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  --font-body:
+    'Pretendard Variable', Pretendard, 'SF Pro Text', -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* Radius scale */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+
+  /* Elevation */
+  --shadow-card: 0 2px 12px rgba(0, 19, 43, 0.06), 0 1px 2px rgba(0, 19, 43, 0.04);
+  --shadow-pop: 0 8px 24px rgba(0, 19, 43, 0.10), 0 2px 4px rgba(0, 19, 43, 0.04);
+  --shadow-modal: 0 16px 40px rgba(0, 19, 43, 0.18), 0 4px 12px rgba(0, 19, 43, 0.08);
+  --shadow-fab: 0 6px 20px rgba(49, 130, 246, 0.35);
+}
+
+/* Foreground/fill helpers (alpha on white) — used by buttons & secondary text */
+:root {
+  --fg-default: rgba(0, 12, 30, 0.8);
+  --fg-secondary: rgba(0, 19, 43, 0.58);
+  --fg-tertiary: rgba(0, 25, 54, 0.31);
+  --fg-disabled: rgba(0, 25, 54, 0.18);
+  --fg-on-fill: rgba(3, 18, 40, 0.7);
+  --fill-neutral-weak: rgba(7, 25, 76, 0.05);
+  --fill-neutral: rgba(7, 25, 76, 0.08);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-gray-100);
+  color: var(--color-gray-900);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Tabular numerics for clocks / metrics */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Shared keyframes used by multiple screens */
+@keyframes fp-ring {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes fp-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fp-landmark {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes fp-scan {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(220px);
+  }
+}

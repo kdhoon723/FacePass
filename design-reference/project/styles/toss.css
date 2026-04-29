@@ -1,0 +1,135 @@
+/* ─────────────────────────────────────────────────────────────
+   Toss Design System — Colors & Type
+   Source: TDS Mobile UI Kit for Apps in Toss (Figma)
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Brand ─────────────────────────────── */
+  --toss-blue:       #3182F6;   /* Primary brand — rgb(49,130,246) */
+  --toss-blue-pressed:#2365CF;  /* Inverse-button text / pressed */
+  --toss-blue-strong:#007FF3;   /* Stronger brand accents */
+  --toss-blue-weak:  #E8F2FE;   /* Weak/tinted brand surfaces */
+
+  /* ── Neutrals (grayscale) ─────────────── */
+  --gray-900: #191F28;  /* Headings (rgb(25,31,40)) */
+  --gray-800: #2E3D51;  /* Strong text */
+  --gray-700: #333D4B;  /* Strong text alt */
+  --gray-600: #4E5968;  /* Body, secondary headings (rgb(78,89,104)) */
+  --gray-500: #6B7683;  /* Muted text */
+  --gray-400: #8B95A1;
+  --gray-300: #B0B8C1;  /* Borders / disabled (rgb(176,184,193)) */
+  --gray-200: #E5E8EB;  /* Dividers (rgb(229,232,235)) */
+  --gray-150: #ECECEC;
+  --gray-100: #F2F4F6;  /* Surfaces (rgb(242,244,246)) */
+  --gray-50:  #F9FAFB;
+  --white:    #FFFFFF;
+  --black:    #000000;
+
+  /* ── Semantic foreground (alpha on white) ── */
+  --fg-default:  rgba(0, 12, 30, 0.80);   /* primary text */
+  --fg-strong:   #191F28;                  /* headings */
+  --fg-secondary:rgba(0, 19, 43, 0.58);    /* secondary */
+  --fg-tertiary: rgba(0, 25, 54, 0.31);    /* tertiary */
+  --fg-disabled: rgba(0, 25, 54, 0.18);
+  --fg-on-fill:  rgba(3, 18, 40, 0.70);    /* button/chip labels on tints */
+  --fg-inverse:  #FFFFFF;
+  --fg-brand:    #3182F6;
+
+  /* ── Semantic backgrounds / fills ─────── */
+  --bg-default:        #FFFFFF;
+  --bg-secondary:      #F2F4F6;
+  --bg-tertiary:       #E5E8EB;
+  --fill-neutral-weak: rgba(7, 25, 76, 0.05);   /* button neutral fill */
+  --fill-neutral:      rgba(7, 25, 76, 0.08);
+  --overlay-dim:       rgba(0, 0, 0, 0.50);
+
+  /* ── Semantic colors ──────────────────── */
+  --green-success: #007B33;   /* rgb(0,123,51) */
+  --red-danger:    #EF4452;   /* rgb(239,68,82) */
+  --red-danger-2:  #EC4452;
+  --yellow:        #FFC84D;   /* rgb(255,200,77) — accent */
+  --yellow-warm:   #FFCC00;   /* rgb(255,204,0) */
+  --orange:        #FF9000;   /* rgb(255,144,0) */
+  --orange-warm:   #FFB582;
+  --brown-earth:   #6E4944;   /* illustration palette */
+  --cream:         #FFCCA8;   /* illustration palette */
+
+  /* ── Border / stroke ──────────────────── */
+  --border-subtle:  rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 29, 58, 0.18);
+  --border-strong:  #B0B8C1;
+
+  /* ── Radius scale (from button + card) ── */
+  --radius-xs:  6px;
+  --radius-sm:  8px;    /* Button S */
+  --radius-md:  10px;   /* Button M */
+  --radius-lg:  14px;   /* Button L */
+  --radius-xl:  16px;   /* Button XL, surfaces */
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;   /* Cards, master section */
+  --radius-4xl: 32px;   /* Hero cards */
+  --radius-pill:999px;
+
+  /* ── Shadow / elevation ───────────────── */
+  --shadow-card: 0 2px 12px rgba(0, 19, 43, 0.06), 0 1px 2px rgba(0, 19, 43, 0.04);
+  --shadow-pop:  0 8px 24px rgba(0, 19, 43, 0.10), 0 2px 4px rgba(0, 19, 43, 0.04);
+  --shadow-modal:0 16px 40px rgba(0, 19, 43, 0.18), 0 4px 12px rgba(0, 19, 43, 0.08);
+  --shadow-fab:  0 6px 20px rgba(49, 130, 246, 0.35);
+
+  /* ── Spacing scale (4px base) ─────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10:40px;
+  --space-12:48px;
+  --space-16:64px;
+
+  /* ── Typography ───────────────────────── */
+  /* Toss uses Toss Product Sans (display) + SF Pro (body, native iOS).
+     Web fallback: Pretendard (Korean+Latin sister) → Inter → system. */
+  --font-display: "Toss Product Sans", "Pretendard", "SF Pro Display",
+                  -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-body:    "SF Pro Text", "Pretendard", -apple-system,
+                  BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  /* Type scale (size / line-height / letter-spacing / weight) */
+  --type-display-1:  700 56px/1.3 var(--font-display);  /* Cover/hero */
+  --type-display-2:  700 40px/1.3 var(--font-display);  /* Section H1 */
+  --type-h1:         700 28px/1.35 var(--font-body);    /* Top page title */
+  --type-h2:         700 22px/1.4 var(--font-body);
+  --type-h3:         700 20px/1.4 var(--font-body);     /* List 2-line title */
+  --type-title-l:    700 17px/1.252 var(--font-body);   /* Button XL/L, list */
+  --type-title-m:    700 15px/1.4 var(--font-body);     /* Button M, chip L */
+  --type-body-l:     400 17px/1.5 var(--font-body);
+  --type-body-m:     400 15px/1.5 var(--font-body);     /* List subtitle */
+  --type-body-s:     400 13px/1.45 var(--font-body);    /* Caption, tab */
+  --type-caption:    500 11px/1.4 var(--font-body);     /* Smallest UI */
+  --type-button-s:   700 13px/1.4 var(--font-body);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Semantic primitives — drop into any HTML to inherit Toss type
+   ───────────────────────────────────────────────────────────── */
+
+.toss { font-family: var(--font-body); color: var(--fg-default); -webkit-font-smoothing: antialiased; }
+
+.toss h1, h1.toss-h1 { font: var(--type-h1); color: var(--fg-strong); letter-spacing: -0.01em; margin: 0; }
+.toss h2, h2.toss-h2 { font: var(--type-h2); color: var(--fg-strong); letter-spacing: -0.005em; margin: 0; }
+.toss h3, h3.toss-h3 { font: var(--type-h3); color: var(--fg-strong); margin: 0; }
+.toss-display-1 { font: var(--type-display-1); color: var(--fg-strong); letter-spacing: -0.01em; }
+.toss-display-2 { font: var(--type-display-2); color: var(--fg-strong); letter-spacing: -0.005em; }
+.toss-title-l   { font: var(--type-title-l);   color: var(--fg-default); }
+.toss-title-m   { font: var(--type-title-m);   color: var(--fg-default); }
+.toss-body-l    { font: var(--type-body-l);    color: var(--fg-default); }
+.toss-body-m    { font: var(--type-body-m);    color: var(--fg-default); }
+.toss-body-s    { font: var(--type-body-s);    color: var(--fg-secondary); }
+.toss-caption   { font: var(--type-caption);   color: var(--fg-secondary); text-transform: none; }
+
+/* All Toss text is tracked slightly tight at large sizes. */
+.toss * { text-rendering: optimizeLegibility; }

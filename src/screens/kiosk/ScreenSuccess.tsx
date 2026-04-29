@@ -1,0 +1,90 @@
+import { StatusBar, HomeIndicator } from '@/components/common';
+import { tokens } from '@/lib/tokens';
+
+const FP_BLUE = tokens.brand;
+const FP_GRAY_900 = tokens.gray900;
+const FP_GRAY_600 = tokens.gray600;
+const FP_GRAY_200 = tokens.gray200;
+const FP_GRAY_100 = tokens.gray100;
+const FP_GREEN = tokens.success;
+
+export default function ScreenSuccess() {
+  return (
+    <div style={{ width: 390, height: 844, background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: FP_GRAY_900, position: 'relative', overflow: 'hidden' }}>
+      {/* Soft success aura */}
+      <div style={{ position: 'absolute', top: -100, left: '50%', transform: 'translateX(-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse at center, rgba(49,130,246,.10) 0%, rgba(49,130,246,0) 70%)' }} />
+
+      <StatusBar />
+
+      {/* Top close */}
+      <div style={{ position: 'relative', padding: '10px 16px', display: 'flex', justifyContent: 'flex-end' }}>
+        <button style={{ width: 40, height: 40, borderRadius: 99, background: FP_GRAY_100, border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: FP_GRAY_900 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      {/* Hero — checkmark + photo */}
+      <div style={{ position: 'relative', padding: '12px 28px 0', textAlign: 'center' }}>
+        <div style={{ position: 'relative', width: 156, height: 156, margin: '0 auto' }}>
+          {/* Profile photo placeholder (gradient + initial) */}
+          <div style={{ width: 156, height: 156, borderRadius: 999, background: 'linear-gradient(135deg, #FFCCA8 0%, #FFB582 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 60, fontWeight: 700, color: '#6E4944', letterSpacing: '-0.02em', boxShadow: '0 8px 24px rgba(0,19,43,.10)' }}>
+            지원
+          </div>
+          {/* Check badge */}
+          <div style={{ position: 'absolute', bottom: 4, right: 4, width: 48, height: 48, borderRadius: 99, background: FP_BLUE, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(49,130,246,.4)' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 28, fontSize: 17, fontWeight: 700, color: FP_BLUE }}>출근 완료</div>
+        <div style={{ marginTop: 6, fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+          김지원님,{'\n'}좋은 하루 보내세요
+        </div>
+      </div>
+
+      {/* Detail card */}
+      <div style={{ padding: '32px 20px 0' }}>
+        <div style={{ background: FP_GRAY_100, borderRadius: 20, padding: '20px 22px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+            <div style={{ fontSize: 14, color: FP_GRAY_600, fontWeight: 600 }}>인증 시각</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: FP_GRAY_900, fontVariantNumeric: 'tabular-nums' }}>오전 8:42:13</div>
+          </div>
+          <div style={{ height: 1, background: FP_GRAY_200, margin: '4px 0' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+            <div style={{ fontSize: 14, color: FP_GRAY_600, fontWeight: 600 }}>위치</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: FP_GRAY_900 }}>본사 7층 라운지 · 키오스크</div>
+          </div>
+          <div style={{ height: 1, background: FP_GRAY_200, margin: '4px 0' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+            <div style={{ fontSize: 14, color: FP_GRAY_600, fontWeight: 600 }}>구분</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ padding: '4px 10px', borderRadius: 999, background: 'rgba(0,123,51,.1)', color: FP_GREEN, fontSize: 13, fontWeight: 700 }}>정시 출근</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Streak */}
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', background: '#FFF8E1', borderRadius: 16 }}>
+          <div style={{ fontSize: 22 }}>🔥</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: FP_GRAY_600, fontWeight: 600 }}>연속 정시 출근</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: FP_GRAY_900, marginTop: 1 }}>14일째 이어가는 중이에요</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1 }} />
+
+      <div style={{ padding: '16px 20px 12px' }}>
+        <button style={{
+          width: '100%', height: 56, borderRadius: 16, border: 0,
+          background: FP_BLUE, color: '#fff', fontSize: 17, fontWeight: 700,
+          fontFamily: 'inherit', cursor: 'pointer',
+        }}>
+          확인
+        </button>
+      </div>
+      <HomeIndicator />
+    </div>
+  );
+}

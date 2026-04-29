@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FacePass — 얼굴인식 출석 서비스</title>
+<link rel="stylesheet" href="styles/toss.css" />
+
+<style>
+  html, body { margin: 0; padding: 0; background: #F2F4F6; font-family: var(--font-body); color: var(--fg-strong); -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  body { overscroll-behavior: none; }
+  .phone-shell {
+    width: 390px; height: 844px;
+    border-radius: 48px;
+    box-shadow: 0 0 0 11px #1a1d22, 0 0 0 12px #2a2e35, 0 30px 60px rgba(0,19,43,.18);
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+  }
+  .desktop-shell {
+    width: 1440px; height: 900px;
+    border-radius: 14px;
+    box-shadow: 0 0 0 1px rgba(0,19,43,.10), 0 30px 80px rgba(0,19,43,.18);
+    overflow: hidden;
+    background: #F9FAFB;
+    position: relative;
+  }
+  .desktop-chrome {
+    height: 36px; background: #EDEFF2; border-bottom: 1px solid #E5E8EB;
+    display: flex; align-items: center; padding: 0 14px; gap: 8px;
+  }
+  .desktop-chrome .dot { width: 12px; height: 12px; border-radius: 99px; }
+  .desktop-chrome .url { flex: 1; height: 24px; background: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6B7683; font-weight: 500; max-width: 360px; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="components/design-canvas.jsx"></script>
+<script type="text/babel" src="components/tweaks-panel.jsx"></script>
+<script type="text/babel" src="components/user-screens.jsx"></script>
+<script type="text/babel" src="components/user-screens-extra.jsx"></script>
+<script type="text/babel" src="components/admin-screens.jsx"></script>
+<script type="text/babel" src="components/admin-screens-extra.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "userScenario": "idle",
+  "adminView": "dashboard",
+  "showAllScreens": true
+}/*EDITMODE-END*/;
+
+function PhoneShell({ children }) {
+  return <div className="phone-shell">{children}</div>;
+}
+
+function DesktopShell({ children, label = "facepass.your-company.com/admin" }) {
+  return (
+    <div className="desktop-shell">
+      <div className="desktop-chrome">
+        <div className="dot" style={{background:"#FF5F57"}}/>
+        <div className="dot" style={{background:"#FEBC2E"}}/>
+        <div className="dot" style={{background:"#28C840"}}/>
+        <div className="url">{label}</div>
+        <div style={{width: 56}}/>
+      </div>
+      <div style={{height: "calc(100% - 36px)", overflow:"hidden"}}>{children}</div>
+    </div>
+  );
+}
+
+function App() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  // When showAllScreens is on, render the full canvas. When off, show the
+  // single-scenario focused view chosen via tweaks.
+  if (!tweaks.showAllScreens) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: "#F2F4F6" }}>
+        {tweaks.userScenario && tweaks.userScenario !== "admin" && (
+          <PhoneShell>
+            {tweaks.userScenario === "idle" && <ScreenIdle/>}
+            {tweaks.userScenario === "camera" && <ScreenCamera/>}
+            {tweaks.userScenario === "recognizing" && <ScreenRecognizing/>}
+            {tweaks.userScenario === "success" && <ScreenSuccess/>}
+            {tweaks.userScenario === "failure" && <ScreenFailure/>}
+            {tweaks.userScenario === "enroll-intro" && <ScreenEnrollIntro/>}
+            {tweaks.userScenario === "enroll-capture" && <ScreenEnrollCapture/>}
+            {tweaks.userScenario === "enroll-done" && <ScreenEnrollDone/>}
+            {tweaks.userScenario === "empno" && <ScreenEmpNo/>}
+            {tweaks.userScenario === "perm-prime" && <ScreenPermPrime/>}
+            {tweaks.userScenario === "perm-denied" && <ScreenPermDenied/>}
+            {tweaks.userScenario === "invite-error" && <ScreenInviteError/>}
+          </PhoneShell>
+        )}
+        {tweaks.userScenario === "admin" && tweaks.adminView !== "login" && (
+          <DesktopShell><AdminScreen view={tweaks.adminView}/></DesktopShell>
+        )}
+        {tweaks.userScenario === "admin" && tweaks.adminView === "login" && (
+          <DesktopShell label="facepass.your-company.com/admin/login"><AdminLogin/></DesktopShell>
+        )}
+        <TweakControls tweaks={tweaks} setTweak={setTweak}/>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="user" title="사용자 — 모바일 출석 인식" subtitle="키오스크 또는 개인 모바일 (390 × 844)">
+          <DCArtboard id="u-idle" label="01 · 대기" width={390} height={844}>
+            <PhoneShell><ScreenIdle/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="u-camera" label="02 · 카메라 + 가이드" width={390} height={844}>
+            <PhoneShell><ScreenCamera/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="u-recog" label="03 · 인식 중" width={390} height={844}>
+            <PhoneShell><ScreenRecognizing/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="u-success" label="04 · 성공" width={390} height={844}>
+            <PhoneShell><ScreenSuccess/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="u-failure" label="05 · 실패 / 재시도" width={390} height={844}>
+            <PhoneShell><ScreenFailure/></PhoneShell>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="enroll" title="신규 등록 — 모바일" subtitle="입사 시 1회, 회사에서 받은 등록 링크/QR로 진입 (390 × 844)">
+          <DCArtboard id="e-intro" label="E1 · 안내" width={390} height={844}>
+            <PhoneShell><ScreenEnrollIntro/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="e-capture" label="E2 · 얼굴 촬영" width={390} height={844}>
+            <PhoneShell><ScreenEnrollCapture/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="e-done" label="E3 · 등록 완료" width={390} height={844}>
+            <PhoneShell><ScreenEnrollDone/></PhoneShell>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="edge" title="모바일 — 엣지 케이스" subtitle="폴백, 권한, 링크 오류 (390 × 844)">
+          <DCArtboard id="u-empno" label="X1 · 사번 폴백" width={390} height={844}>
+            <PhoneShell><ScreenEmpNo/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="u-perm-prime" label="X2 · 권한 안내 (Priming)" width={390} height={844}>
+            <PhoneShell><ScreenPermPrime/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="u-perm-denied" label="X3 · 카메라 권한 거부" width={390} height={844}>
+            <PhoneShell><ScreenPermDenied/></PhoneShell>
+          </DCArtboard>
+          <DCArtboard id="u-invite-error" label="X4 · 초대 링크 오류" width={390} height={844}>
+            <PhoneShell><ScreenInviteError/></PhoneShell>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="admin" title="관리자 — 데스크톱 콘솔" subtitle="HR / 인사담당자용 (1440 × 900)">
+          <DCArtboard id="a-login" label="00 · 관리자 로그인" width={1440} height={900}>
+            <DesktopShell label="facepass.your-company.com/admin/login"><AdminLogin/></DesktopShell>
+          </DCArtboard>
+          <DCArtboard id="a-dash" label="06 · 대시보드" width={1440} height={900}>
+            <DesktopShell><AdminScreen view="dashboard"/></DesktopShell>
+          </DCArtboard>
+          <DCArtboard id="a-records" label="07 · 출석 기록" width={1440} height={900}>
+            <DesktopShell><AdminScreen view="records"/></DesktopShell>
+          </DCArtboard>
+          <DCArtboard id="a-reports" label="08 · 리포트" width={1440} height={900}>
+            <DesktopShell><AdminScreen view="reports"/></DesktopShell>
+          </DCArtboard>
+          <DCArtboard id="a-employees" label="09 · 직원 관리 / 등록 초대" width={1440} height={900}>
+            <DesktopShell><AdminScreen view="employees"/></DesktopShell>
+          </DCArtboard>
+          <DCArtboard id="a-settings" label="10 · 설정" width={1440} height={900}>
+            <DesktopShell><AdminSettings/></DesktopShell>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+      <TweakControls tweaks={tweaks} setTweak={setTweak}/>
+    </>
+  );
+}
+
+function TweakControls({ tweaks, setTweak }) {
+  return (
+    <TweaksPanel title="Tweaks">
+      <TweakSection title="보기 모드">
+        <TweakToggle label="전체 화면 캔버스" value={tweaks.showAllScreens}
+          onChange={v => setTweak("showAllScreens", v)}
+          hint="끄면 단일 화면을 가운데 표시해요" />
+      </TweakSection>
+
+      {!tweaks.showAllScreens && (
+        <>
+          <TweakSection title="사용자 화면">
+            <TweakRadio
+              value={tweaks.userScenario}
+              onChange={v => setTweak("userScenario", v)}
+              options={[
+                { value: "idle", label: "대기" },
+                { value: "camera", label: "카메라" },
+                { value: "recognizing", label: "인식 중" },
+                { value: "success", label: "성공" },
+                { value: "failure", label: "실패" },
+              ]}
+            />
+          </TweakSection>
+
+          <TweakSection title="신규 등록 (모바일)">
+            <TweakRadio
+              value={tweaks.userScenario}
+              onChange={v => setTweak("userScenario", v)}
+              options={[
+                { value: "enroll-intro", label: "안내" },
+                { value: "enroll-capture", label: "촬영" },
+                { value: "enroll-done", label: "완료" },
+              ]}
+            />
+          </TweakSection>
+
+          <TweakSection title="모바일 — 엣지 케이스">
+            <TweakRadio
+              value={tweaks.userScenario}
+              onChange={v => setTweak("userScenario", v)}
+              options={[
+                { value: "empno", label: "사번 폴백" },
+                { value: "perm-prime", label: "권한 안내" },
+                { value: "perm-denied", label: "권한 거부" },
+                { value: "invite-error", label: "링크 만료" },
+              ]}
+            />
+          </TweakSection>
+
+          <TweakSection title="관리자 (데스크톱)">
+            <TweakRadio
+              value={tweaks.userScenario === "admin" ? tweaks.adminView : ""}
+              onChange={v => { setTweak("userScenario", "admin"); setTweak("adminView", v); }}
+              options={[
+                { value: "login", label: "로그인" },
+                { value: "dashboard", label: "대시보드" },
+                { value: "records", label: "기록" },
+                { value: "reports", label: "리포트" },
+                { value: "employees", label: "직원 관리" },
+                { value: "settings", label: "설정" },
+              ]}
+            />
+          </TweakSection>
+        </>
+      )}
+    </TweaksPanel>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
