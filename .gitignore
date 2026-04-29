@@ -51,6 +51,8 @@ public/models/*.tflite
 *-firebase-adminsdk-*.json
 google-credentials*.json
 .firebase/
+firebase-debug.log
+firebase-debug.*.log
 
 # misc
 *.tsbuildinfo
