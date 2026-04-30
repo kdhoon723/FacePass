@@ -6,9 +6,13 @@ interface Props {
   /** dataURL of the cropped face used for embedding extraction.
    *  Shown as a small thumbnail so the user sees exactly which image is being analyzed. */
   capturedFace?: string | null;
+  /** When true, the static centered corner guide + scan line + landmarks are
+   *  hidden so the live face-tracking box (rendered by KioskApp) is the only
+   *  visual indicator. */
+  faceTracked?: boolean;
 }
 
-export default function ScreenRecognizing({ capturedFace }: Props = {}) {
+export default function ScreenRecognizing({ capturedFace, faceTracked = false }: Props = {}) {
   return (
     <div style={{ width: '100%', minHeight: '100dvh', background: 'transparent', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto', zIndex: 2 }}>
       {/* Semi-transparent dark overlay so the kiosk's live video stays visible
@@ -31,36 +35,37 @@ export default function ScreenRecognizing({ capturedFace }: Props = {}) {
         <div style={{ marginTop: 8, fontSize: 14, color: 'rgba(255,255,255,.6)' }}>잠시만 그대로 있어주세요</div>
       </div>
 
-      {/* Compact corner guide with scan line */}
-      <div style={{ position: 'relative', padding: '24px 0 0', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ position: 'relative', width: 220, height: 220 }}>
-          <svg width="220" height="220" viewBox="0 0 220 220" style={{ position: 'absolute', inset: 0 }}>
-            <defs>
-              <linearGradient id="scanGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={FP_BLUE} stopOpacity="0" />
-                <stop offset="50%" stopColor={FP_BLUE} stopOpacity="1" />
-                <stop offset="100%" stopColor={FP_BLUE} stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {([
-              [10, 10, 1, 1], [210, 10, -1, 1], [10, 210, 1, -1], [210, 210, -1, -1],
-            ] as [number, number, number, number][]).map(([x, y, dx, dy], i) => (
-              <g key={i} stroke={FP_BLUE} strokeWidth="4" strokeLinecap="round" fill="none" style={{ filter: 'drop-shadow(0 0 8px rgba(49,130,246,.6))' }}>
-                <path d={`M${x} ${y} L${x + dx * 32} ${y}`} />
-                <path d={`M${x} ${y} L${x} ${y + dy * 32}`} />
+      {/* Static centered corner guide + scan line — hidden once the live
+          face-tracking box takes over so the two indicators don't compete. */}
+      {!faceTracked && (
+        <div style={{ position: 'relative', padding: '24px 0 0', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', width: 220, height: 220 }}>
+            <svg width="220" height="220" viewBox="0 0 220 220" style={{ position: 'absolute', inset: 0 }}>
+              <defs>
+                <linearGradient id="scanGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={FP_BLUE} stopOpacity="0" />
+                  <stop offset="50%" stopColor={FP_BLUE} stopOpacity="1" />
+                  <stop offset="100%" stopColor={FP_BLUE} stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {([
+                [10, 10, 1, 1], [210, 10, -1, 1], [10, 210, 1, -1], [210, 210, -1, -1],
+              ] as [number, number, number, number][]).map(([x, y, dx, dy], i) => (
+                <g key={i} stroke={FP_BLUE} strokeWidth="4" strokeLinecap="round" fill="none" style={{ filter: 'drop-shadow(0 0 8px rgba(49,130,246,.6))' }}>
+                  <path d={`M${x} ${y} L${x + dx * 32} ${y}`} />
+                  <path d={`M${x} ${y} L${x} ${y + dy * 32}`} />
+                </g>
+              ))}
+              <g style={{ animation: 'fp-scan 2.2s cubic-bezier(.6,0,.4,1) infinite' }}>
+                <rect x="15" y="0" width="190" height="3" fill="url(#scanGrad)" />
               </g>
-            ))}
-            {/* scan line */}
-            <g style={{ animation: 'fp-scan 2.2s cubic-bezier(.6,0,.4,1) infinite' }}>
-              <rect x="15" y="0" width="190" height="3" fill="url(#scanGrad)" />
-            </g>
-            {/* face landmarks */}
-            {([[80,90],[140,90],[110,120],[95,150],[125,150]] as [number, number][]).map(([cx, cy], i) => (
-              <circle key={i} cx={cx} cy={cy} r="3" fill={FP_BLUE} style={{ animation: `fp-landmark 1.4s ${i * 0.08}s infinite` }} />
-            ))}
-          </svg>
+              {([[80,90],[140,90],[110,120],[95,150],[125,150]] as [number, number][]).map(([cx, cy], i) => (
+                <circle key={i} cx={cx} cy={cy} r="3" fill={FP_BLUE} style={{ animation: `fp-landmark 1.4s ${i * 0.08}s infinite` }} />
+              ))}
+            </svg>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Captured face thumbnail — shows the exact frame being analyzed */}
       {capturedFace && (

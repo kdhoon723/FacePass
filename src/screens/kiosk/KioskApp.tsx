@@ -340,8 +340,17 @@ export default function KioskApp() {
           onEmpnoFallback={() => setStep('empno')}
         />
       )}
-      {step === 'camera' && <ScreenCamera type={checkType} onTypeChange={setCheckType} onBack={() => setStep('idle')} />}
-      {step === 'recognizing' && <ScreenRecognizing capturedFace={capturedFace} />}
+      {step === 'camera' && (
+        <ScreenCamera
+          type={checkType}
+          onTypeChange={setCheckType}
+          onBack={() => setStep('idle')}
+          faceTracked={!!faceBox}
+        />
+      )}
+      {step === 'recognizing' && (
+        <ScreenRecognizing capturedFace={capturedFace} faceTracked={!!faceBox} />
+      )}
       {step === 'success' && (
         <ScreenSuccess
           employee={employee ?? undefined}
