@@ -9,9 +9,12 @@ interface Props {
   type?: 'check_in' | 'check_out';
   onTypeChange?: (t: 'check_in' | 'check_out') => void;
   onBack?: () => void;
+  /** When true, the static centered corner guide is hidden so only the live
+   *  face-tracking box (rendered by KioskApp) remains visible. */
+  faceTracked?: boolean;
 }
 
-export default function ScreenCamera({ type = 'check_in', onTypeChange, onBack }: Props = {}) {
+export default function ScreenCamera({ type = 'check_in', onTypeChange, onBack, faceTracked = false }: Props = {}) {
   return (
     <div style={{ width: '100%', minHeight: '100dvh', background: 'transparent', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', color: '#fff', position: 'relative', overflow: 'hidden auto' }}>
       {/* Dark gradient overlay on top of the KioskApp fixed <video> */}
@@ -31,19 +34,21 @@ export default function ScreenCamera({ type = 'check_in', onTypeChange, onBack }
         </button>
       </div>
 
-      {/* Compact QR-style corner guide */}
-      <div style={{ position: 'relative', padding: '20px 0 0', display: 'flex', justifyContent: 'center' }}>
-        <svg width="220" height="220" viewBox="0 0 220 220">
-          {([
-            [10, 10, 1, 1], [210, 10, -1, 1], [10, 210, 1, -1], [210, 210, -1, -1],
-          ] as [number, number, number, number][]).map(([x, y, dx, dy], i) => (
-            <g key={i} stroke="#fff" strokeWidth="4" strokeLinecap="round" fill="none">
-              <path d={`M${x} ${y} L${x + dx * 32} ${y}`} />
-              <path d={`M${x} ${y} L${x} ${y + dy * 32}`} />
-            </g>
-          ))}
-        </svg>
-      </div>
+      {/* Static centered corner guide — hidden once a face is tracked. */}
+      {!faceTracked && (
+        <div style={{ position: 'relative', padding: '20px 0 0', display: 'flex', justifyContent: 'center' }}>
+          <svg width="220" height="220" viewBox="0 0 220 220">
+            {([
+              [10, 10, 1, 1], [210, 10, -1, 1], [10, 210, 1, -1], [210, 210, -1, -1],
+            ] as [number, number, number, number][]).map(([x, y, dx, dy], i) => (
+              <g key={i} stroke="#fff" strokeWidth="4" strokeLinecap="round" fill="none">
+                <path d={`M${x} ${y} L${x + dx * 32} ${y}`} />
+                <path d={`M${x} ${y} L${x} ${y + dy * 32}`} />
+              </g>
+            ))}
+          </svg>
+        </div>
+      )}
 
       {/* Title */}
       <div style={{ position: 'relative', padding: '20px 28px 0', textAlign: 'center' }}>
