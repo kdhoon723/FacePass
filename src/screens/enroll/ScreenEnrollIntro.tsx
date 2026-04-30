@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function ScreenEnrollIntro({ employee, onStart }: Props = {}) {
-  const name = employee?.name ?? '김지원';
+  const name = employee?.name ?? '김페패';
   return (
     <div
       style={{

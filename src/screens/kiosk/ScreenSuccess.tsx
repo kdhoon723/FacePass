@@ -44,7 +44,7 @@ export default function ScreenSuccess({
   streakDays,
   onClose,
 }: Props) {
-  const name = employee?.name ?? '김지원';
+  const name = employee?.name ?? '김페패';
   const initials = name.slice(-2);
   const at = recognizedAt ?? new Date();
   const statusInfo = STATUS_LABELS[status];

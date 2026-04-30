@@ -15,10 +15,10 @@ function formatEnrolledAt(date: Date): string {
 }
 
 export default function ScreenEnrollDone({ employee, enrolledAt: enrolledAtProp }: Props = {}) {
-  const name = employee?.name ?? '김지원';
+  const name = employee?.name ?? '김페패';
   const initials = name.slice(-2);
-  const employeeNo = employee?.employee_no ?? 'EMP-0142';
-  const dept = employee?.dept ?? '프로덕트 디자인';
+  const employeeNo = employee?.employee_no ?? 'EMP-0001';
+  const dept = employee?.dept ?? 'FacePass';
   const enrolledAt = formatEnrolledAt(enrolledAtProp ?? new Date());
   return (
     <div
