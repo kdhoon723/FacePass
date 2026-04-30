@@ -58,7 +58,8 @@ export default function KioskApp() {
       videoElRef.current = el;
       camera.videoRef(el);
     },
-    [camera],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [camera.videoRef],
   );
 
   const detectorRef = useRef<FaceDetector | null>(null);

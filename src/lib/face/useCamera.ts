@@ -13,6 +13,8 @@ export interface UseCameraReturn {
 export function useCamera(): UseCameraReturn {
   const [state, setState] = useState<CameraState>('idle');
   const [error, setError] = useState<Error | null>(null);
+  const stateRef = useRef<CameraState>('idle');
+  stateRef.current = state;
 
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -25,7 +27,7 @@ export function useCamera(): UseCameraReturn {
   }, []);
 
   const start = useCallback(async () => {
-    if (state === 'requesting' || state === 'streaming') return;
+    if (stateRef.current === 'requesting' || stateRef.current === 'streaming') return;
 
     setState('requesting');
     setError(null);
@@ -60,7 +62,7 @@ export function useCamera(): UseCameraReturn {
         setState('error');
       }
     }
-  }, [state]);
+  }, []);
 
   const stop = useCallback(() => {
     if (streamRef.current) {
