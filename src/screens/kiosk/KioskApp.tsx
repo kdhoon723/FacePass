@@ -288,8 +288,26 @@ export default function KioskApp() {
         muted
         style={
           step === 'camera' || step === 'recognizing'
-            ? { position: 'fixed', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }
-            : { position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }
+            ? {
+                position: 'fixed',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                // Mirror the front-facing video so users see themselves
+                // selfie-style (left hand on the left side of the screen).
+                transform: 'scaleX(-1)',
+                zIndex: 0,
+              }
+            : {
+                position: 'fixed',
+                width: 1,
+                height: 1,
+                opacity: 0,
+                pointerEvents: 'none',
+                top: 0,
+                left: 0,
+              }
         }
       />
 
