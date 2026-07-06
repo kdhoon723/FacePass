@@ -97,7 +97,7 @@ export default function EnrollFlow() {
       // Detect face
       let faces: ReturnType<typeof detectFaces> = [];
       if (detector) {
-        try { faces = detectFaces(detector, video); } catch {}
+        try { faces = detectFaces(detector, video); } catch { faces = []; }
       }
 
       const best = detector

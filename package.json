@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "사내 얼굴인식 출석체크 (페패)",
+  "description": "브라우저 얼굴인식 기반 출석체크 프로토타입",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -39,5 +39,6 @@
     "vite": "^6.0.7",
     "vite-plugin-pwa": "^0.21.1",
     "workbox-window": "^7.3.0"
-  }
+  },
+  "license": "MIT"
 }
