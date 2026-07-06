@@ -59,3 +59,13 @@ firebase-debug.*.log
 .claude/
 .firebaserc
 supabase/.temp/
+
+# Local-only AI/agent instructions and runtime state
+# These may contain private operational notes for working on a public repo.
+AGENTS.md
+CLAUDE.md
+AGENTS.local.md
+CLAUDE.local.md
+.claude/
+.codex/
+.omx/
