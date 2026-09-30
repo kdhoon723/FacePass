@@ -1,25 +1,14 @@
-# CODING AGENTS: READ THIS FIRST
+# FacePass 디자인 참고 자료
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+이 디렉터리는 FacePass 화면을 구현할 때 참고한 디자인 도구의 내보내기 결과를 보관합니다. 현재 애플리케이션의 실행 코드나 최신 기능 명세가 아니라, UI 이식 과정의 원본 자료입니다.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+## 구성
 
-## What you should do — IMPORTANT
+```text
+chats/chat1.md          디자인 도구와 주고받은 작업 기록
+project/FacePass.html   디자인 미리보기 진입 파일
+project/components/     화면과 공통 컴포넌트 원본
+project/styles/         디자인 원본 스타일
+```
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `facepass/chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
-
-**Read `facepass/project/FacePass.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
-
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
-
-## About the design files
-
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
-
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
-
-## Bundle contents
-
-- `facepass/README.md` — this file
-- `facepass/chats/` — conversation transcripts (read these!)
-- `facepass/project/` — the `FacePass` project files (HTML prototypes, assets, components)
+현재 React 애플리케이션은 [`../src/`](../src/)에 있습니다. 동작과 데이터 흐름을 확인할 때는 이 참고 자료보다 실제 애플리케이션 소스를 기준으로 판단하세요.

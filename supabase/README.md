@@ -62,16 +62,17 @@ Supabase 대시보드 → **SQL Editor**에서 순서대로 실행:
 
 ### 3. Edge Function 배포
 
+프로젝트 루트에서 Supabase CLI를 개발 의존성으로 설치한 뒤 `npx`로 실행합니다. npm 방식은 Node.js 20 이상이 필요합니다.
+
 ```bash
-# Supabase CLI 설치 (없는 경우)
-npm install -g supabase
+npm install supabase --save-dev
 
 # 프로젝트 로그인 및 링크
-supabase login
-supabase link --project-ref <your-project-ref>
+npx supabase login
+npx supabase link --project-ref <your-project-ref>
 
 # api 함수 배포 (--no-verify-jwt: Hono 미들웨어가 JWT 직접 검증)
-supabase functions deploy api --no-verify-jwt
+npx supabase functions deploy api --no-verify-jwt
 ```
 
 ### 4. 환경 변수
